@@ -8,13 +8,12 @@
 using namespace std;
 
 bool checkKey(string key, const map<string, vector<string> > &my_map);
-extern ofstream outfile;
-extern bool regFound;
+extern ostringstream oss;
 extern vector<tuple<string, vector<string>,string, bool>> graph;
 
 int numGraphElems = 0;
 
-bool is_wire(string sym, const map<string, vector<string> > &my_map)
+bool is_X(string sym, const map<string, vector<string> > &my_map, string type)
 {
 	map<string, vector<string> >::const_iterator it = my_map.find(sym);
 	if (it == my_map.end()) {
@@ -22,42 +21,8 @@ bool is_wire(string sym, const map<string, vector<string> > &my_map)
 		return false;
 	}
 	string symFunc = it->second[0];
-	return !symFunc.compare("wire");
+	return !symFunc.compare(type);
 }
-
-bool is_output(string sym, const map<string, vector<string> > &my_map)
-{
-	map<string, vector<string> >::const_iterator it = my_map.find(sym);
-	if (it == my_map.end()) {
-		cerr << "Error: '" << sym << "' is not a variable";
-		return false;
-	}
-	string symFunc = it->second[0];
-	return !symFunc.compare("output");
-}
-
-bool is_input(string sym, const map<string, vector<string> > &my_map)
-{
-	map<string, vector<string> >::const_iterator it = my_map.find(sym);
-	if (it == my_map.end()) {
-		cerr << "Error: '" << sym << "' is not a variable";
-		return false;
-	}
-	string symFunc = it->second[0];
-	return !symFunc.compare("input");
-}
-
-bool is_register(string sym, const map<string, vector<string> > &my_map)
-{
-	map<string, vector<string> >::const_iterator it = my_map.find(sym);
-	if (it == my_map.end()) {
-		cerr << "Error: '" << sym << "' is not a variable";
-		return false;
-	}
-	string symFunc = it->second[0];
-	return !symFunc.compare("register");
-}
-
 
 unsigned int numInc = 0, numDec = 0, numAdd = 0, numSub = 0, numMod = 0, numDiv = 0, numShl = 0, numShr = 0, numComp = 0, numMul = 0, numMux = 0, numReg = 0;
 
@@ -77,7 +42,7 @@ bool assign_op_result(string op, string line, const map<string, vector<string> >
 		cerr << "Error: unexpected symbol: " << curSym << " in following line:" << endl << line << endl;
 		return false;
 	}
-	else if (!is_wire(curSym, my_map)) {
+	else if (!is_X(curSym, my_map, "wire")) {
 		cerr << "Error: '" << curSym << "' is not a wire in following line:" << endl << line << endl;
 		return false;
 	}
@@ -104,7 +69,7 @@ bool assign_op_result(string op, string line, const map<string, vector<string> >
 			cerr << "Error: unexpected symbol: " << curSym << " in following line:" << endl << line << endl;
 			return false;
 		}
-		else if (!is_input(curSym, my_map) && !is_wire(curSym, my_map)) {
+		else if (!is_X(curSym, my_map,"input") && !is_X(curSym, my_map, "wire")) {
 			cerr << "Error: " << curSym << " is not an input or a wire in following line:" << endl << line << endl;
 			return false;
 		}
@@ -134,7 +99,7 @@ bool assign_op_result(string op, string line, const map<string, vector<string> >
 				cerr << "Error: unexpected symbol: " << curSym << " in following line:" << endl << line << endl;
 				return false;
 			}
-			else if (!is_input(curSym, my_map) && !is_wire(curSym, my_map)) {
+			else if (!is_X(curSym, my_map, "input") && !is_X(curSym, my_map,"wire")) {
 				cerr << "Error: " << curSym << " is not an input or a wire in following line:" << endl << line << endl;
 				return false;
 			}
@@ -246,7 +211,7 @@ bool assign_op_result(string op, string line, const map<string, vector<string> >
 	else
 		outstr = outstr + "(" + in1 + "," + in2 + "," + out + ");";
 
-	outfile << outstr << endl;
+	oss << outstr << endl;
 	
 	return true;
 }
@@ -316,7 +281,7 @@ bool REG_(string line, const map<string, vector<string> > &my_map)
 
 	bool isreg = false;
 
-	if (is_register(curSym, my_map)) {
+	if (is_X(curSym, my_map,"register")) {
 		isreg = true;
 	}
 	else {
@@ -324,7 +289,7 @@ bool REG_(string line, const map<string, vector<string> > &my_map)
 			cerr << "Error: unexpected symbol '" << curSym << "' in following line:" << endl << line << endl;
 			return false;
 		}
-		if (!is_output(curSym, my_map)) {
+		if (!is_X(curSym, my_map,"output")) {
 			cerr << "Error: '" << curSym << "' is not an output or register in following line:" << endl << line << endl;
 			return false;
 		}
@@ -351,7 +316,7 @@ bool REG_(string line, const map<string, vector<string> > &my_map)
 		cerr << "Error: unexpected symbol: " << curSym << " in following line:" << endl << line << endl;
 		return false;
 	}
-	else if (!is_input(curSym, my_map) && !is_wire(curSym, my_map)) {
+	else if (!is_X(curSym, my_map,"input") && !is_X(curSym, my_map,"wire")) {
 		cerr << "Error: " << curSym << " is not an input or a wire in following line:" << endl << line << endl;
 		return false;
 	}
@@ -366,13 +331,12 @@ bool REG_(string line, const map<string, vector<string> > &my_map)
 	}
 	bitManip(in, my_map);
 	if (isreg)
-		outfile << prefix + "REG#(" + to_string(bitSize) + ") " << out << "(" << in << "," << out << "_out,clk,rst);" << endl;
+		oss << prefix + "REG#(" + to_string(bitSize) + ") " << out << "(" << in << "," << out << "_out,clk,rst);" << endl;
 	else
-		outfile << prefix + "REG#(" + to_string(bitSize) + ") Reg_" << ++numReg << "(" << in << "," << out << ",clk,rst);" << endl;
+		oss << prefix + "REG#(" + to_string(bitSize) + ") Reg_" << ++numReg << "(" << in << "," << out << ",clk,rst);" << endl;
 
 	vector<string> v{ in_orig };
 	graph.push_back(make_tuple("REG" + to_string(bitSize), v, out_orig, false));
-	regFound = true;
 
 	return true;
 };
@@ -393,7 +357,7 @@ bool MUX2x1_(string line, const map<string, vector<string> > &my_map)
 		cerr << "Error: unexpected symbol: " << curSym << " in following line:" << endl << line << endl;
 		return false;
 	}
-	else if (!is_wire(curSym, my_map) && !is_output(curSym, my_map)) { //TBD
+	else if (!is_X(curSym, my_map,"wire") && !is_X(curSym, my_map,"output")) { //TBD
 		cerr << "Error: '" << curSym << "' is not a wire or output in following line:" << endl << line << endl;
 		return false;
 	}
@@ -419,7 +383,7 @@ bool MUX2x1_(string line, const map<string, vector<string> > &my_map)
 		cerr << "Error: unexpected symbol: " << curSym << " in following line:" << endl << line << endl;
 		return false;
 	}
-	else if (!is_input(curSym, my_map) && !is_wire(curSym, my_map)) {
+	else if (!is_X(curSym, my_map,"input") && !is_X(curSym, my_map,"wire")) {
 		cerr << "Error: " << curSym << " is not an input or a wire in following line:" << endl << line << endl;
 		return false;
 	}
@@ -441,7 +405,7 @@ bool MUX2x1_(string line, const map<string, vector<string> > &my_map)
 		cerr << "Error: unexpected symbol: " << curSym << " in following line:" << endl << line << endl;
 		return false;
 	}
-	else if (!is_input(curSym, my_map) && !is_wire(curSym, my_map)) {
+	else if (!is_X(curSym, my_map,"input") && !is_X(curSym, my_map,"wire")) {
 		cerr << "Error: " << curSym << " is not an input or a wire in following line:" << endl << line << endl;
 		return false;
 	}
@@ -463,7 +427,7 @@ bool MUX2x1_(string line, const map<string, vector<string> > &my_map)
 		cerr << "Error: unexpected symbol: " << curSym << " in following line:" << endl << line << endl;
 		return false;
 	}
-	else if (!is_input(curSym, my_map) && !is_wire(curSym, my_map)) {
+	else if (!is_X(curSym, my_map,"input") && !is_X(curSym, my_map,"wire")) {
 		cerr << "Error: " << curSym << " is not an input or a wire in following line:" << endl << line << endl;
 		return false;
 	}
@@ -482,7 +446,7 @@ bool MUX2x1_(string line, const map<string, vector<string> > &my_map)
 
 	vector<string> v{ in3_orig,in2_orig,in1_orig };
 	graph.push_back(make_tuple("MUX2x1" + to_string(bitSize), v,out_orig, false ));
-	outfile << prefix + "MUX2x1#(" + to_string(bitSize) + ") Mux_" << ++numMux << "(" << in3 << "," << in2 << "," << in1 << "," << out << ");" << endl;
+	oss << prefix + "MUX2x1#(" + to_string(bitSize) + ") Mux_" << ++numMux << "(" << in3 << "," << in2 << "," << in1 << "," << out << ");" << endl;
 
 	return true;
 }
