@@ -6,7 +6,7 @@
 #include <map>
 #include <tuple>
 #include "Verilog_Imp.h"
-#include "dpgen.h"
+#include "hlsyn.h"
 
 using namespace std;
 
@@ -54,8 +54,8 @@ const map<string, double> latencies = {
 
 int main(int argc, char *argv[])
 {
-	if (argc < 3) {
-		cout << "Usage: " << argv[0] << " netlistFile verilogFile" << endl;
+	if (argc != 4) {
+		cout << "Usage: " << argv[0] << " cFile latency verilogFile" << endl;
 		return 1;
 	}
 
@@ -64,6 +64,7 @@ int main(int argc, char *argv[])
 		cerr << "Input file " << argv[1] << " failed to open" << endl;
 		return 1;
 	}
+
 	ofstream finalOutFile;
 	finalOutFile.open(argv[2]);
 	if (finalOutFile.fail()) {
@@ -222,36 +223,42 @@ int main(int argc, char *argv[])
 		if (!var.second[0].compare("input") || !var.second[0].compare("register"))
 			graphLatencies[var.first] = 0;
 	}
-	for (auto& node : graph) {
-		if (!get<3>(node)) {
-			vector<string> vins = get<1>(node);
-			bool ready = true;
-			double max_in_time = 0;
-			//check if all inputs are ready
-			for (auto vin : vins) {
-				if (vin.size() > 4) {
-					if (vin.substr(vin.size() - 4, vin.size()) == "_out")
-						vin.erase(vin.size() - 4, vin.size());
+
+	bool all_scheduled;
+	do {
+		all_scheduled = true;
+		for (auto& node : graph) {
+			if (!get<3>(node)) {
+				vector<string> vins = get<1>(node);
+				bool ready = true;
+				double max_in_time = 0;
+				//check if all inputs are ready
+				for (auto vin : vins) {
+					if (vin.size() > 4) {
+						if (vin.substr(vin.size() - 4, vin.size()) == "_out")
+							vin.erase(vin.size() - 4, vin.size());
+					}
+					auto it = graphLatencies.find(vin);
+					if (it == graphLatencies.end())
+						ready = false;
+					else {
+						all_scheduled = false;
+						double t = it->second;
+						max_in_time = max_in_time > t ? max_in_time : t;
+					}
 				}
-				auto it = graphLatencies.find(vin);
-				if (it == graphLatencies.end())
-					ready = false;
-				else {
-					double t = it->second;
-					max_in_time = max_in_time > t ? max_in_time : t;
+				//if this node is ready to be scheduled
+				if (ready) {
+					//this node is now scheduled
+					get<3>(node) = true;
+					//find out time
+					double node_out_time = max_in_time + latencies.find(get<0>(node))->second;
+					max_time = max_time > node_out_time ? max_time : node_out_time;
+					graphLatencies[get<2>(node)] = node_out_time;
 				}
-			}
-			//if this node is ready to be scheduled
-			if (ready) {
-				//this node is now scheduled
-				get<3>(node) = true;
-				//find out time
-				double node_out_time = max_in_time + latencies.find(get<0>(node))->second;
-				max_time = max_time > node_out_time ? max_time : node_out_time;
-				graphLatencies[get<2>(node)] = node_out_time;
 			}
 		}
-	}
+	} while (!all_scheduled);
 
 	cout << "Critical Path: " << max_time << " ns" << endl;
 	return 0;
@@ -277,10 +284,7 @@ void topModuleWrite(ofstream &finalOutFile, string name, const map<string, vecto
 
 	finalOutFile << "`timescale 1ns / 1ps" << endl << endl;
 
-	if (regFound)
-		finalOutFile << "module circuit(" + var + ");" << endl << "input clk, rst;" << endl;
-	else
-		finalOutFile << "module circuit(" + var + ");" << endl;
+	finalOutFile << "module circuit(Clk, Rst, Start, Done, " + var + ");" << endl;
 
 
 	for (string line; getline(infile, line);)	// Pass through all lines of code

@@ -28,4 +28,4 @@ file( GLOB SRCS *.cpp *.h )
 # Define the target application executable (named assignmentname) and the list of CPP source
 # and header files needed for the executable.
 
-add_executable( dpgen ${SRCS} )
+add_executable( hlsyn ${SRCS} )
