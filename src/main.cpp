@@ -17,36 +17,65 @@ vector<tuple<string, vector<string>, string, bool>> graph;
 
 int main(int argc, char *argv[])
 {
+	const char *arg1, *arg2, *arg3;
+	if (argc == 1) {
+		arg1 = "C:\\Users\\Dillon\\Desktop\\ECE-574A\\git-assignment3\\assignment3_testfiles_full\\error tests\\error3.c";
+		argc = 2;
+	}
+	else
+		arg1 = argv[1];
+	if (argc == 2) {
+		arg2 = "20";
+		argc = 3;
+	}
+	else
+		arg2 = argv[2];
+	if (argc == 3) { //DEBUG/DEV CODE
+		arg3 = "C:\\Users\\Dillon\\Desktop\\ECE-574A\\git-assignment3\\out.v";
+		argc = 4;
+	}
+	else
+		arg3 = argv[3];
+
 	if (argc != 4) {
-		cout << "Usage: " << argv[0] << " cFile latency verilogFile" << endl;
+		cerr << "Usage: " << argv[0] << " cFile latency verilogFile" << endl;
 		return 1;
 	}
 
-	ifstream infile(argv[1]);
+	stringstream ss{ arg2 };
+	int latency;
+	if (!(ss >> latency)) {
+		cerr << "Usage: " << argv[0] << " cFile latency verilogFile" << endl;
+		cerr << "latency argument invalid" << endl;
+		return 1;
+	}
+
+	if (latency <= 0) {
+		cerr << "latency should be greater than 0";
+		return 1;
+	}
+
+	ifstream infile(arg1);
 	if (infile.fail()) {
-		cerr << "Input file " << argv[1] << " failed to open" << endl;
+		cerr << "Input file " << arg1 << " failed to open" << endl;
 		return 1;
 	}
 
 	ofstream finalOutFile;
-	finalOutFile.open(argv[2]);
+	finalOutFile.open(arg3);
 	if (finalOutFile.fail()) {
-		cerr << "Output file " << argv[2] << " failed to open" << endl;
+		cerr << "Output file " << arg3 << " failed to open" << endl;
 		return 1;
 	}
 
-	string msg = "";
-	string type;
 	string token;
-
-	int errorFlag = 0;
 
 	map<string, vector<string> > var_map;	// Store variable info ex: variables[name][type, input/output/wire]
 	vector<string> storedTokens;
 
 	for (string line; getline(infile, line);)	// Pass through all lines of code
 	{
-		istringstream iss(line);
+		istringstream iss{line};
 
 		bool eqFound = false, otherFound = false;;
 		while (iss >> token)	// Pass through each token in line
@@ -127,63 +156,47 @@ int main(int argc, char *argv[])
 			}
 			else if (!token.compare("input")) {	// input variables
 				otherFound = true;
-				errorFlag = grabVariables(line, var_map);
+				int errorFlag = grabVariables(line, var_map);
+				if (errorFlag)
+					return errorFlag;
 				break;	// finished grabbing line continue to next 
 			}
 			else if (!token.compare("output")) { // output variables
 				otherFound = true;
-				errorFlag = grabVariables(line, var_map);
+				int errorFlag = grabVariables(line, var_map);
+				if (errorFlag)
+					return errorFlag;
 				break;	// finished grabbing line continue to next line
 			}
-			else if (!token.compare("wire")) {	// wire variables
+			else if (!token.compare("variable")) { // register variables
 				otherFound = true;
-				errorFlag = grabVariables(line, var_map);
-				break;	// finished grabbing line continue to next line
-			}
-			else if (!token.compare("register")) { // register variables
-				otherFound = true;
-				errorFlag = grabVariables(line, var_map);
+				int errorFlag = grabVariables(line, var_map);
+				if (errorFlag)
+					return errorFlag;
 				break;	// finished grabbing line continue to next line
 			}
 			else {
 				if (!checkKey(token, var_map))
 				{
-					// ERROR VARIABLE NOT DEFINED AS INPUT, OUTPUT, REGISTER or WIRE
-					errorFlag = 1;
+					cerr << "token " << "'" << token << "' does not represent an input, output or variable" << endl;
+					cerr << errorMsg[1] << endl;
+					oss << errorMsg[1] << endl;
+					return 1;
 				}
 				storedTokens.push_back(token);
-				msg = "";
 			}
-
 		}
 		if (eqFound && !otherFound)
 			if (!REG_(line, var_map))
 				return 1;
-
-		if (errorFlag != 0) {
-			cerr << errorMsg[errorFlag];
-			oss << errorMsg[errorFlag];
-			break;
-		}
-		else
-			oss << msg;
 	}
 
 	oss << "endmodule";  //close of module
 
 	infile.close();
 
-	topModuleWrite(finalOutFile, argv[2], var_map);
-	finalOutFile.close();
-
-	return 0;
-}
-
-
-void topModuleWrite(ofstream &finalOutFile, string name, const map<string, vector<string> > &my_map)
-{
 	string var = "";
-	for (map<string, vector<string> >::const_iterator it = my_map.begin(); it != my_map.end(); ++it) {
+	for (map<string, vector<string> >::const_iterator it = var_map.begin(); it != var_map.end(); ++it) {
 		if (!it->second[0].compare("input") ||
 			!it->second[0].compare("output"))
 		{
@@ -199,7 +212,11 @@ void topModuleWrite(ofstream &finalOutFile, string name, const map<string, vecto
 	finalOutFile << "module HSLM(Clk, Rst, Start, Done, " + var + ");" << endl;
 
 	finalOutFile << oss.str();
+	finalOutFile.close();
+
+	return 0;
 }
+
 
 bool checkKey(string key, const map<string, vector<string> > &my_map)
 {
@@ -208,7 +225,6 @@ bool checkKey(string key, const map<string, vector<string> > &my_map)
 
 int grabVariables(string line, map<string, vector<string> > &my_map)
 {
-	int error = 2;
 	string func;
 	string type;
 	string token;
@@ -218,7 +234,7 @@ int grabVariables(string line, map<string, vector<string> > &my_map)
 	iss >> type;
 
 	if (!checkType(type)) {
-		return error;
+		return 2;
 	}
 
 	bool reg = false;
@@ -227,27 +243,37 @@ int grabVariables(string line, map<string, vector<string> > &my_map)
 		outstr = "input";
 	else if (!func.compare("output"))
 		outstr = "output";
-	else if (!func.compare("wire"))
-		outstr = "wire";
-	else if (!func.compare("register")) { // TBD
-		outstr = "wire";
+	else if (!func.compare("variable")) {
+		outstr = "reg";
 		reg = true;
 	}
 	else {
 		cerr << "Error: unknown func: '" << func << "' in line " << endl << line << endl;
 		return 1;
 	}
-	if (!type.compare("Int1") || !type.compare("UInt1"))
+	if (!type.compare("Int1"))
+		outstr = outstr + " signed ";
+	else if(!type.compare("UInt1"))
 		outstr = outstr + " ";
-	else if (!type.compare("Int2") || !type.compare("UInt2"))
+	else if (!type.compare("Int2"))
+		outstr = outstr + " signed [1:0] ";
+	else if (!type.compare("UInt2"))
 		outstr = outstr + "[1:0] ";
-	else if (!type.compare("Int8") || !type.compare("UInt8"))
+	else if (!type.compare("Int8"))
+		outstr = outstr + " signed [7:0] ";
+	else if (!type.compare("UInt8"))
 		outstr = outstr + "[7:0] ";
-	else if (!type.compare("Int16") || !type.compare("UInt16"))
+	else if (!type.compare("Int16"))
+		outstr = outstr + " signed [15:0] ";
+	else if (!type.compare("UInt16"))
 		outstr = outstr + "[15:0] ";
-	else if (!type.compare("Int32") || !type.compare("UInt32"))
+	else if (!type.compare("Int32"))
+		outstr = outstr + " signed [31:0] ";
+	else if (!type.compare("UInt32"))
 		outstr = outstr + "[31:0] ";
-	else if (!type.compare("Int64") || !type.compare("UInt64"))
+	else if (!type.compare("Int64"))
+		outstr = outstr + " signed [63:0] ";
+	else if (!type.compare("UInt64"))
 		outstr = outstr + "[63:0] ";
 	else {
 		cerr << "Error: unknown type: '" << type << "' in line: " << endl << line << endl;

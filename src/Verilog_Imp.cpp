@@ -42,8 +42,8 @@ bool assign_op_result(string op, string line, const map<string, vector<string> >
 		cerr << "Error: unexpected symbol: " << curSym << " in following line:" << endl << line << endl;
 		return false;
 	}
-	else if (!is_X(curSym, my_map, "wire")) {
-		cerr << "Error: '" << curSym << "' is not a wire in following line:" << endl << line << endl;
+	else if (!is_X(curSym, my_map, "register") && !is_X(curSym, my_map, "output")) {
+		cerr << "Error: '" << curSym << "' is not a variable (register) or output in following line:" << endl << line << endl;
 		return false;
 	}
 
@@ -69,8 +69,8 @@ bool assign_op_result(string op, string line, const map<string, vector<string> >
 			cerr << "Error: unexpected symbol: " << curSym << " in following line:" << endl << line << endl;
 			return false;
 		}
-		else if (!is_X(curSym, my_map,"input") && !is_X(curSym, my_map, "wire")) {
-			cerr << "Error: " << curSym << " is not an input or a wire in following line:" << endl << line << endl;
+		else if (!is_X(curSym, my_map,"input") && !is_X(curSym, my_map, "register")) {
+			cerr << "Error: " << curSym << " is not an input or a variable (register) in following line:" << endl << line << endl;
 			return false;
 		}
 	}
@@ -99,8 +99,8 @@ bool assign_op_result(string op, string line, const map<string, vector<string> >
 				cerr << "Error: unexpected symbol: " << curSym << " in following line:" << endl << line << endl;
 				return false;
 			}
-			else if (!is_X(curSym, my_map, "input") && !is_X(curSym, my_map,"wire")) {
-				cerr << "Error: " << curSym << " is not an input or a wire in following line:" << endl << line << endl;
+			else if (!is_X(curSym, my_map, "input") && !is_X(curSym, my_map,"register")) {
+				cerr << "Error: " << curSym << " is not an input or a variable (register) in following line:" << endl << line << endl;
 				return false;
 			}
 		}
@@ -316,8 +316,8 @@ bool REG_(string line, const map<string, vector<string> > &my_map)
 		cerr << "Error: unexpected symbol: " << curSym << " in following line:" << endl << line << endl;
 		return false;
 	}
-	else if (!is_X(curSym, my_map,"input") && !is_X(curSym, my_map,"wire")) {
-		cerr << "Error: " << curSym << " is not an input or a wire in following line:" << endl << line << endl;
+	else if (!is_X(curSym, my_map,"input") && !is_X(curSym, my_map,"register")) {
+		cerr << "Error: " << curSym << " is not an input or a variable (register) in following line:" << endl << line << endl;
 		return false;
 	}
 	in = curSym;
@@ -357,8 +357,8 @@ bool MUX2x1_(string line, const map<string, vector<string> > &my_map)
 		cerr << "Error: unexpected symbol: " << curSym << " in following line:" << endl << line << endl;
 		return false;
 	}
-	else if (!is_X(curSym, my_map,"wire") && !is_X(curSym, my_map,"output")) { //TBD
-		cerr << "Error: '" << curSym << "' is not a wire or output in following line:" << endl << line << endl;
+	else if (!is_X(curSym, my_map,"register") && !is_X(curSym, my_map,"output")) { //TBD
+		cerr << "Error: '" << curSym << "' is not a variable (register) or output in following line:" << endl << line << endl;
 		return false;
 	}
 
@@ -383,8 +383,8 @@ bool MUX2x1_(string line, const map<string, vector<string> > &my_map)
 		cerr << "Error: unexpected symbol: " << curSym << " in following line:" << endl << line << endl;
 		return false;
 	}
-	else if (!is_X(curSym, my_map,"input") && !is_X(curSym, my_map,"wire")) {
-		cerr << "Error: " << curSym << " is not an input or a wire in following line:" << endl << line << endl;
+	else if (!is_X(curSym, my_map,"input") && !is_X(curSym, my_map,"register")) {
+		cerr << "Error: " << curSym << " is not an input or a variable (register) in following line:" << endl << line << endl;
 		return false;
 	}
 	in1 = curSym;
@@ -405,8 +405,8 @@ bool MUX2x1_(string line, const map<string, vector<string> > &my_map)
 		cerr << "Error: unexpected symbol: " << curSym << " in following line:" << endl << line << endl;
 		return false;
 	}
-	else if (!is_X(curSym, my_map,"input") && !is_X(curSym, my_map,"wire")) {
-		cerr << "Error: " << curSym << " is not an input or a wire in following line:" << endl << line << endl;
+	else if (!is_X(curSym, my_map,"input") && !is_X(curSym, my_map,"register")) {
+		cerr << "Error: " << curSym << " is not an input or a variable (register) in following line:" << endl << line << endl;
 		return false;
 	}
 	in2 = curSym;
@@ -427,8 +427,8 @@ bool MUX2x1_(string line, const map<string, vector<string> > &my_map)
 		cerr << "Error: unexpected symbol: " << curSym << " in following line:" << endl << line << endl;
 		return false;
 	}
-	else if (!is_X(curSym, my_map,"input") && !is_X(curSym, my_map,"wire")) {
-		cerr << "Error: " << curSym << " is not an input or a wire in following line:" << endl << line << endl;
+	else if (!is_X(curSym, my_map,"input") && !is_X(curSym, my_map,"register")) {
+		cerr << "Error: " << curSym << " is not an input or a variable (register) in following line:" << endl << line << endl;
 		return false;
 	}
 	in3 = curSym;
