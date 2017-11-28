@@ -12,6 +12,8 @@ using namespace std;
 
 ostringstream oss;
 
+extern bool assign_op_result(string op, string line, const map<string, vector<string> > &my_map);
+
 //            type      in names     name    scheduled
 vector<tuple<string, vector<string>, string, bool>> graph;
 
@@ -82,7 +84,7 @@ int main(int argc, char *argv[])
 		{
 			if (!token.compare("+")) {	// ADD and INC
 				otherFound = true;
-				if (!Add_or_INC(line, var_map))
+				if (!assign_op_result("+", line, var_map))
 					return 1;
 				break;
 			}
@@ -91,36 +93,35 @@ int main(int argc, char *argv[])
 			}
 			else if (!token.compare("-")) {	// SUB and DEC
 				otherFound = true;
-				if (!SUB_or_DEC(line, var_map))
+				if (!assign_op_result("-", line, var_map))
 					return 1;
 				break;
 			}
 			else if (!token.compare("*")) {	// MUL
 				otherFound = true;
-				if (!MUL_(line, var_map))
+				if (!assign_op_result("*", line, var_map))
 					return 1;
 				break;
 			}
 			else if (!token.compare(">")) {	// COMP (gt output)
 				otherFound = true;
-				if (!COMP_gt(line, var_map))
+				if (!assign_op_result(">", line, var_map))
 					return 1;
 				break;
 			}
 			else if (!token.compare("<")) {	// COMP (lt output)
 				otherFound = true;
-				if (!COMP_lt(line, var_map))
+				if (!assign_op_result("<", line, var_map))
 					return 1;
 				break;
 			}
 			else if (!token.compare("==")) {// COMP (eq output)
 				otherFound = true;
-				if (!COMP_eq(line, var_map))
+				if (!assign_op_result("==", line, var_map))
 					return 1;
 				break;
 			}
-			else if (!token.compare("?") ||
-				!token.compare(":")) {	// MUX2x1
+			else if (!token.compare("?") || !token.compare(":")) {	// MUX2x1
 				otherFound = true;
 				if (!MUX2x1_(line, var_map))
 					return 1;
@@ -128,25 +129,25 @@ int main(int argc, char *argv[])
 			}
 			else if (!token.compare(">>")) { // SHR
 				otherFound = true;
-				if (!SHR_(line, var_map))
+				if (!assign_op_result(">>", line, var_map))
 					return 1;
 				break;
 			}
 			else if (!token.compare("<<")) { // SHL
 				otherFound = true;
-				if (!SHL_(line, var_map))
+				if (!assign_op_result("<<", line, var_map))
 					return 1;
 				break;
 			}
 			else if (!token.compare("/")) {	// DIV
 				otherFound = true;
-				if (!DIV_(line, var_map))
+				if (!assign_op_result("/", line, var_map))
 					return 1;
 				break;
 			}
 			else if (!token.compare("%")) {	// MOD
 				otherFound = true;
-				if (!MOD_(line, var_map))
+				if (!assign_op_result("%", line, var_map))
 					return 1;
 				break;
 			}
