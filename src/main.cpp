@@ -5,23 +5,42 @@
 #include <string>
 #include <map>
 #include <tuple>
+#include "Node.h"
 #include "Verilog_Imp.h"
 #include "hlsyn.h"
 
 using namespace std;
 
-ostringstream oss;
+void printNodes(vector<Node*> myNodes)
+{
+	for (int i = 0; i < myNodes.size(); ++i)
+	{
+		cout << "Node #" << i << endl;
+		cout << "Num of Parents: " << myNodes[i]->getParentsSize() << endl;
+		cout << "Output: " << myNodes[i]->getVerilogCode() << endl << endl;
+	}
+}
 
-extern bool assign_op_result(string op, string line, const map<string, vector<string> > &my_map);
-
-//            type      in names     name    scheduled
-vector<tuple<string, vector<string>, string, bool>> graph;
+void connectNodes(vector<Node*> myNodes)
+{
+	for (int i = 0; i < myNodes.size(); ++i)
+	{
+		for (int j = i; j < myNodes.size(); ++j)
+		{
+			if (myNodes[j]->chkIfParent(myNodes[i]->getOutPut()))
+			{
+				myNodes[j]->addParent(myNodes[i]);
+				myNodes[i]->addChild(myNodes[j]);
+			}
+		}
+	}
+}
 
 int main(int argc, char *argv[])
 {
 	const char *arg1, *arg2, *arg3;
 	if (argc == 1) {
-		arg1 = "C:\\Users\\Dillon\\Desktop\\ECE-574A\\git-assignment3\\assignment3_testfiles_full\\error tests\\error3.c";
+		arg1 = "C:\\Users\\Devan\\Documents\\578 - Computer-Aided Logic Design\\assignment3_testfiles\\standard tests\\hls_test1.c";
 		argc = 2;
 	}
 	else
@@ -33,7 +52,7 @@ int main(int argc, char *argv[])
 	else
 		arg2 = argv[2];
 	if (argc == 3) { //DEBUG/DEV CODE
-		arg3 = "C:\\Users\\Dillon\\Desktop\\ECE-574A\\git-assignment3\\out.v";
+		arg3 = "C:\\Users\\Devan\\Documents\\578 - Computer-Aided Logic Design\\assignment3_testfiles\\out.v";
 		argc = 4;
 	}
 	else
@@ -71,21 +90,28 @@ int main(int argc, char *argv[])
 	}
 
 	string token;
+	ostringstream oss;
+	
+	vector<Node*> myNodes;
 
 	map<string, vector<string> > var_map;	// Store variable info ex: variables[name][type, input/output/wire]
 	vector<string> storedTokens;
 
 	for (string line; getline(infile, line);)	// Pass through all lines of code
 	{
+		Node* pNode;
 		istringstream iss{line};
 
 		bool eqFound = false, otherFound = false;;
 		while (iss >> token)	// Pass through each token in line
 		{
+			
 			if (!token.compare("+")) {	// ADD and INC
 				otherFound = true;
-				if (!assign_op_result("+", line, var_map))
+				pNode = assign_op_result("+", line, var_map);
+				if (pNode == NULL)
 					return 1;
+				myNodes.push_back(pNode);
 				break;
 			}
 			else if (!token.compare("=")) {	// REG
@@ -93,62 +119,82 @@ int main(int argc, char *argv[])
 			}
 			else if (!token.compare("-")) {	// SUB and DEC
 				otherFound = true;
-				if (!assign_op_result("-", line, var_map))
+				pNode = assign_op_result("-", line, var_map);
+				if (pNode == NULL)
 					return 1;
+				myNodes.push_back(pNode);
 				break;
 			}
 			else if (!token.compare("*")) {	// MUL
 				otherFound = true;
-				if (!assign_op_result("*", line, var_map))
+				pNode = assign_op_result("*", line, var_map);
+				if (pNode == NULL)
 					return 1;
+				myNodes.push_back(pNode);
 				break;
 			}
 			else if (!token.compare(">")) {	// COMP (gt output)
 				otherFound = true;
-				if (!assign_op_result(">", line, var_map))
+				pNode = assign_op_result(">", line, var_map);
+				if (pNode == NULL)
 					return 1;
+				myNodes.push_back(pNode);
 				break;
 			}
 			else if (!token.compare("<")) {	// COMP (lt output)
 				otherFound = true;
-				if (!assign_op_result("<", line, var_map))
+				pNode = assign_op_result("<", line, var_map);
+				if (pNode == NULL)
 					return 1;
+				myNodes.push_back(pNode);
 				break;
 			}
 			else if (!token.compare("==")) {// COMP (eq output)
 				otherFound = true;
-				if (!assign_op_result("==", line, var_map))
+				pNode = assign_op_result("==", line, var_map);
+				if (pNode == NULL)
 					return 1;
+				myNodes.push_back(pNode);
 				break;
 			}
 			else if (!token.compare("?") || !token.compare(":")) {	// MUX2x1
 				otherFound = true;
-				if (!MUX2x1_(line, var_map))
+				pNode = MUX2x1_(line, var_map);
+				if(pNode == NULL)
 					return 1;
+				myNodes.push_back(pNode);
 				break;
 			}
 			else if (!token.compare(">>")) { // SHR
 				otherFound = true;
-				if (!assign_op_result(">>", line, var_map))
+				pNode = assign_op_result(">>", line, var_map);
+				if (pNode == NULL)
 					return 1;
+				myNodes.push_back(pNode);
 				break;
 			}
 			else if (!token.compare("<<")) { // SHL
 				otherFound = true;
-				if (!assign_op_result("<<", line, var_map))
+				pNode = assign_op_result("<<", line, var_map);
+				if (pNode == NULL)
 					return 1;
+				myNodes.push_back(pNode);
 				break;
 			}
 			else if (!token.compare("/")) {	// DIV
 				otherFound = true;
-				if (!assign_op_result("/", line, var_map))
+				pNode = assign_op_result("/", line, var_map);
+				if (pNode == NULL)
 					return 1;
+				myNodes.push_back(pNode);
 				break;
 			}
 			else if (!token.compare("%")) {	// MOD
 				otherFound = true;
-				if (!assign_op_result("%", line, var_map))
+				pNode = assign_op_result("%", line, var_map);
+				if (pNode == NULL)
 					return 1;
+				myNodes.push_back(pNode);
 				break;
 			}
 			else if (!token.compare("//")) { // COMMENT!!!
@@ -187,10 +233,16 @@ int main(int argc, char *argv[])
 				storedTokens.push_back(token);
 			}
 		}
-		if (eqFound && !otherFound)
-			if (!REG_(line, var_map))
+		if (eqFound && !otherFound) {
+			pNode = REG_(line, var_map);
+			if (pNode == NULL)
 				return 1;
+			myNodes.push_back(pNode);
+		}
 	}
+
+	connectNodes(myNodes);
+	printNodes(myNodes);
 
 	oss << "endmodule";  //close of module
 
@@ -309,7 +361,7 @@ int grabVariables(string line, map<string, vector<string> > &my_map)
 		cerr << "Error: expected another variable in line:" << endl << line << endl;
 		return 4;
 	}
-	oss << outstr << ";" << endl;
+
 	return 0;
 }
 
