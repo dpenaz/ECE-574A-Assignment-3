@@ -8,16 +8,25 @@ using namespace std;
 Node::Node(string Op)
 {
 	this->nodeOp = Op;
-	this->doneFlag = false;			// Operation has not been performed
+
+	/*Initialize ASAP & ALAP*/
+	this->ASAP_start = 0;	
+	this->ALAP_start = 0;
+
 	if (!Op.compare("*"))			// Set Cycle Delay depending on Operation
-		this->cycleDelay = 2;
+		this->latency = 2;
 	else if (!Op.compare("/") || !Op.compare("%"))
-		this->cycleDelay = 3;
+		this->latency = 3;
 	else
-		this->cycleDelay = 1;
+		this->latency = 1;
 }
 
 Node::~Node() {}
+
+int Node::getLatency()
+{
+	return this->latency;
+}
 
 void Node::setOutPut(string val)
 {
@@ -32,11 +41,6 @@ void Node::addInputs(string val)
 void Node::addParent(Node* p)
 {
 	this->parents.push_back(p);
-}
-
-int Node::getParentsSize()
-{
-	return this->parents.size();
 }
 
 void Node::removeParent(Node* p)
@@ -64,11 +68,6 @@ int Node::getStartTime()
 	return this->startTime;
 }
 
-void Node::complete()
-{
-	this->doneFlag = true;
-}
-
 string Node::getVerilogCode()
 {
 	// Needs to be implimented
@@ -93,4 +92,34 @@ bool Node::findChild(string var)
 	if (!var.compare(this->outPut))
 		return true;
 	return false;
+}
+
+void Node::setALAP(int t)
+{
+	this->ALAP_start = t;
+}
+
+int Node::getALAP()
+{
+	return this->ALAP_start;
+}
+
+void Node::setFlag(bool v)
+{
+	this->visitedFlag = v;
+}
+
+bool Node::getFlag()
+{
+	return this->visitedFlag;
+}
+
+void Node::setASAP(int v)
+{
+	this->ASAP_start = v;
+}
+
+int Node::getASAP()
+{
+	return this->ASAP_start;
 }

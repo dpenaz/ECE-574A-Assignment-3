@@ -6,32 +6,40 @@ using namespace std;
 
 class Node
 {
-	bool doneFlag;			// Lets child node know if node has been completed
-	int cycleDelay;
+	bool visitedFlag;		// Lets child node know if node has been completed
+	int latency;			// Cycles to execute
 	int startTime;			// When the Operation should occure
+
+	int ALAP_start;
+	int ASAP_start;
 
 	string nodeOp;
 	string outPut;
 	list<string> inPuts;
 	
+public:
 	vector<Node*> parents;	// Nodes that happen before
 	vector<Node*> children;	// Nodes that are dependent on this node
 
-public:
 	Node(string Op);
 	~Node();
 
+	void setASAP(int t);
+	void setALAP(int t);
 	void setOutPut(string val);
 	void addInputs(string val);
 	void addParent(Node* p);
 	void removeParent(Node* p);
 	void addChild(Node* c);
 	void setStartTime(int t);
-	void complete();
+	void setFlag(bool v);
 
+	int getLatency();
+	int getALAP();
+	int getASAP();
+	bool getFlag();
 	string getOutPut();
 	int getStartTime();
-	int getParentsSize();
 	string getVerilogCode();
 	bool findChild(string var);
 	bool chkIfParent(string var);

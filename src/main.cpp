@@ -5,36 +5,11 @@
 #include <string>
 #include <map>
 #include <tuple>
-#include "Node.h"
+#include "FDS.h"
 #include "Verilog_Imp.h"
 #include "hlsyn.h"
 
 using namespace std;
-
-void printNodes(vector<Node*> myNodes)
-{
-	for (int i = 0; i < myNodes.size(); ++i)
-	{
-		cout << "Node #" << i << endl;
-		cout << "Num of Parents: " << myNodes[i]->getParentsSize() << endl;
-		cout << "Output: " << myNodes[i]->getVerilogCode() << endl << endl;
-	}
-}
-
-void connectNodes(vector<Node*> myNodes)
-{
-	for (int i = 0; i < myNodes.size(); ++i)
-	{
-		for (int j = i; j < myNodes.size(); ++j)
-		{
-			if (myNodes[j]->chkIfParent(myNodes[i]->getOutPut()))
-			{
-				myNodes[j]->addParent(myNodes[i]);
-				myNodes[i]->addChild(myNodes[j]);
-			}
-		}
-	}
-}
 
 int main(int argc, char *argv[])
 {
@@ -64,7 +39,7 @@ int main(int argc, char *argv[])
 	}
 
 	stringstream ss{ arg2 };
-	int latency;
+	int latency;	// in Cycles
 	if (!(ss >> latency)) {
 		cerr << "Usage: " << argv[0] << " cFile latency verilogFile" << endl;
 		cerr << "latency argument invalid" << endl;
@@ -242,6 +217,8 @@ int main(int argc, char *argv[])
 	}
 
 	connectNodes(myNodes);
+	cal_ALAP(myNodes, latency);
+	cal_ASAP(myNodes);
 	printNodes(myNodes);
 
 	oss << "endmodule";  //close of module
