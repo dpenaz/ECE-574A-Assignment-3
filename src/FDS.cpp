@@ -9,6 +9,7 @@ void printNodes(vector<Node*> myNodes)
 	{
 		cout << "Node #" << i << endl;
 		cout << "Num of Parents: " << myNodes[i]->parents.size() << endl;
+		cout << "Num of Children: " << myNodes[i]->children.size() << endl;
 		cout << "Output: " << myNodes[i]->getVerilogCode() << endl;
 		cout << "ASAP: " << myNodes[i]->getASAP() << endl;
 		cout << "ALAP: " << myNodes[i]->getALAP() << endl << endl;
@@ -42,11 +43,13 @@ void cal_ALAP(vector<Node*> myNodes, int cycles)
 {
 	int time, temp;
 	bool done = false;
+	bool ready;
 	while (!done)
 	{
 		done = true;
 		for (int i = 0; i < myNodes.size(); ++i)
 		{
+			ready = true;
 			if (myNodes[i]->children.size() == 0) // bottom of tree
 			{
 				time = cycles - myNodes[i]->getLatency() + 1;
@@ -54,20 +57,21 @@ void cal_ALAP(vector<Node*> myNodes, int cycles)
 			}	
 			else
 			{
-				time = 0;
+				time = 100000;
 				temp = 0;
 				for (int j = 0; j < myNodes[i]->children.size(); ++j)	//check children to see if scheduled
 				{
 					if (myNodes[i]->children[j]->getALAP() == 0)
 					{
 						done = false;
+						ready = false;
 						break;
 					}
-					temp = myNodes[i]->children[j]->getALAP() - myNodes[i]->children[j]->getLatency();
+					temp = myNodes[i]->children[j]->getALAP() - myNodes[i]->getLatency();
 					if (temp < time)		// get Largest wait time from children
 						time = temp;
 				}
-				if (done)
+				if (ready)
 					myNodes[i]->setALAP(time);
 			}
 		}
