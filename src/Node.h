@@ -1,45 +1,48 @@
 #include <string>
 #include <vector>
+#include <tuple>
 #include <list>
 
 using namespace std;
 
 class Node
 {
+public:
+	/******************
+	**** Variables ****
+	******************/
 	bool visitedFlag;		// Lets child node know if node has been completed
-	int latency;			// Cycles to execute
-	int startTime;			// When the Operation should occure
 
+	int latency;			// Cycles to execute
 	int ALAP_start;
 	int ASAP_start;
+	int width;
 
-	string nodeOp;
 	string outPut;
+	string nodeOp;
+	
 	list<string> inPuts;
 	
-public:
+	double prob_val;
+	int finalScheduleTime;			// When the Operation should occure
+	vector<tuple<int, double>> forces;	// Used to determine finalScheduleTime ::  tuple<"cycle", "TotalForce">
+	
 	vector<Node*> parents;	// Nodes that happen before
 	vector<Node*> children;	// Nodes that are dependent on this node
+
+	/******************
+	**** Functions ****
+	******************/
 
 	Node(string Op);
 	~Node();
 
-	void setASAP(int t);
-	void setALAP(int t);
-	void setOutPut(string val);
 	void addInputs(string val);
 	void addParent(Node* p);
 	void removeParent(Node* p);
 	void addChild(Node* c);
-	void setStartTime(int t);
-	void setFlag(bool v);
+	void setWidth();
 
-	int getLatency();
-	int getALAP();
-	int getASAP();
-	bool getFlag();
-	string getOutPut();
-	int getStartTime();
 	string getVerilogCode();
 	bool findChild(string var);
 	bool chkIfParent(string var);

@@ -23,14 +23,10 @@ Node::Node(string Op)
 
 Node::~Node() {}
 
-int Node::getLatency()
+void Node::setWidth()
 {
-	return this->latency;
-}
-
-void Node::setOutPut(string val)
-{
-	this->outPut = val;
+	this->width = ALAP_start - ASAP_start + 1;
+	this->prob_val = 1.0 / this->width;
 }
 
 void Node::addInputs(string val)
@@ -58,24 +54,9 @@ void Node::addChild(Node* c)
 	this->children.push_back(c);
 }
 
-void Node::setStartTime(int t)
-{
-	this->startTime = t;
-}
-
-int Node::getStartTime()
-{
-	return this->startTime;
-}
-
 string Node::getVerilogCode()
 {
 	// Needs to be implimented
-	return this->outPut;
-}
-
-string Node::getOutPut()
-{
 	return this->outPut;
 }
 
@@ -92,34 +73,4 @@ bool Node::findChild(string var)
 	if (!var.compare(this->outPut))
 		return true;
 	return false;
-}
-
-void Node::setALAP(int t)
-{
-	this->ALAP_start = t;
-}
-
-int Node::getALAP()
-{
-	return this->ALAP_start;
-}
-
-void Node::setFlag(bool v)
-{
-	this->visitedFlag = v;
-}
-
-bool Node::getFlag()
-{
-	return this->visitedFlag;
-}
-
-void Node::setASAP(int v)
-{
-	this->ASAP_start = v;
-}
-
-int Node::getASAP()
-{
-	return this->ASAP_start;
 }

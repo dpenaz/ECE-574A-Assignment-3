@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 	else
 		arg1 = argv[1];
 	if (argc == 2) {
-		arg2 = "20";
+		arg2 = "5";
 		argc = 3;
 	}
 	else
@@ -68,6 +68,20 @@ int main(int argc, char *argv[])
 	ostringstream oss;
 	
 	vector<Node*> myNodes;
+
+	vector<double> multDist;
+	vector<double> add_subDist;
+	vector<double> logicDist;
+	vector<double> div_modDist;
+
+	// Initialize Vector to size of latency
+	for (int i = 0; i <= latency; ++i)
+	{
+		multDist.push_back(0);
+		add_subDist.push_back(0);
+		logicDist.push_back(0);
+		div_modDist.push_back(0);
+	}
 
 	map<string, vector<string> > var_map;	// Store variable info ex: variables[name][type, input/output/wire]
 	vector<string> storedTokens;
@@ -216,10 +230,21 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	// Begin calculating steps for Forced-Directed Scheduling (FDS)
+
 	connectNodes(myNodes);
 	cal_ALAP(myNodes, latency);
 	cal_ASAP(myNodes);
+	cal_width(myNodes);
+	cal_TypeDistribution(myNodes, multDist, add_subDist, logicDist, div_modDist);
+	cal_ForceDir(myNodes, multDist, add_subDist, logicDist, div_modDist);  // NOT FULLY IMPLEMENTED...LEFT OFF HERE!!!!!!!!
+
 	printNodes(myNodes);
+
+	printDistribution(multDist);
+	printDistribution(add_subDist);
+	printDistribution(logicDist);
+	printDistribution(div_modDist);
 
 	oss << "endmodule";  //close of module
 

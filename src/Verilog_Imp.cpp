@@ -151,7 +151,7 @@ Node* assign_op_result(string op, string line, const map<string, vector<string> 
 	}
 
 	Node* pNode = new Node(opstr);
-	pNode->setOutPut(out);
+	pNode->outPut = out;
 	pNode->addInputs(in1);
 	pNode->addInputs(in2);
 	return pNode;
@@ -209,7 +209,7 @@ Node* REG_(string line, const map<string, vector<string> > &my_map)
 	}
 
 	Node* pNode = new Node("=");
-	pNode->setOutPut(out);
+	pNode->outPut = out;
 	pNode->addInputs(in);
 	
 	return pNode;
@@ -308,7 +308,7 @@ Node* MUX2x1_(string line, const map<string, vector<string> > &my_map)
 
 
 	Node* pNode = new Node("?");
-	pNode->setOutPut(out);
+	pNode->outPut = out;
 	pNode->addInputs(in1);
 	pNode->addInputs(in2);
 	pNode->addInputs(in3);
