@@ -6,7 +6,7 @@ using namespace std;
 
 void printNodes(vector<Node*> myNodes)
 {
-	for (int i = 0; i < myNodes.size(); ++i)
+	for (unsigned int i = 0; i < myNodes.size(); ++i)
 	{
 		cout << "Node #" << i << endl;
 		cout << "Num of Parents: " << myNodes[i]->parents.size() << endl;
@@ -21,10 +21,10 @@ void printNodes(vector<Node*> myNodes)
 
 void printDistribution(vector<double> v)
 {
-	for (int col = 0; col < v.size(); ++col)
+	for (unsigned int col = 0; col < v.size(); ++col)
 	{
 		cout << col << "\t";
-		for (int row = 1; row < v.size(); ++row)
+		for (unsigned int row = 1; row < v.size(); ++row)
 		{
 			if (col == 0)
 				cout << row << "\t";
@@ -38,7 +38,7 @@ void printDistribution(vector<double> v)
 
 void resetFlag(vector<Node*> myNodes)
 {
-	for (int i = 0; i < myNodes.size(); ++i)
+	for (unsigned int i = 0; i < myNodes.size(); ++i)
 	{
 		myNodes[i]->visitedFlag = false;
 	}
@@ -46,9 +46,9 @@ void resetFlag(vector<Node*> myNodes)
 
 void connectNodes(vector<Node*> myNodes)
 {
-	for (int i = 0; i < myNodes.size(); ++i)
+	for (unsigned int i = 0; i < myNodes.size(); ++i)
 	{
-		for (int j = i; j < myNodes.size(); ++j)
+		for (unsigned int j = i; j < myNodes.size(); ++j)
 		{
 			if (myNodes[j]->chkIfParent(myNodes[i]->outPut))
 			{
@@ -67,7 +67,7 @@ void cal_ALAP(vector<Node*> myNodes, int cycles)
 	while (!done)
 	{
 		done = true;
-		for (int i = 0; i < myNodes.size(); ++i)
+		for (unsigned int i = 0; i < myNodes.size(); ++i)
 		{
 			ready = true;
 			if (myNodes[i]->children.size() == 0) // bottom of tree
@@ -79,7 +79,7 @@ void cal_ALAP(vector<Node*> myNodes, int cycles)
 			{
 				time = 100000;
 				temp = 0;
-				for (int j = 0; j < myNodes[i]->children.size(); ++j)	//check children to see if scheduled
+				for (unsigned int j = 0; j < myNodes[i]->children.size(); ++j)	//check children to see if scheduled
 				{
 					if (myNodes[i]->children[j]->ALAP_start == 0)
 					{
@@ -105,7 +105,7 @@ void cal_ASAP(vector<Node*> myNodes)
 	while (!done)
 	{
 		done = true;
-		for (int i = 0; i < myNodes.size(); ++i)
+		for (unsigned int i = 0; i < myNodes.size(); ++i)
 		{
 			if (myNodes[i]->parents.size() == 0) // Top of tree
 				myNodes[i]->ASAP_start = 1;
@@ -113,7 +113,7 @@ void cal_ASAP(vector<Node*> myNodes)
 			{
 				time = 0;
 				temp = 0;
-				for (int j = 0; j < myNodes[i]->parents.size(); ++j)	//check parents to see if scheduled
+				for (unsigned int j = 0; j < myNodes[i]->parents.size(); ++j)	//check parents to see if scheduled
 				{
 					if (myNodes[i]->parents[j]->ASAP_start == 0)
 					{
@@ -133,7 +133,7 @@ void cal_ASAP(vector<Node*> myNodes)
 
 void cal_width(vector<Node*> myNodes)
 {
-	for (int i = 0; i < myNodes.size(); ++i)
+	for (unsigned int i = 0; i < myNodes.size(); ++i)
 	{
 		myNodes[i]->setWidth();
 	}
@@ -142,7 +142,7 @@ void cal_width(vector<Node*> myNodes)
 void cal_TypeDistribution(vector<Node*> myNodes, vector<double> &mult, vector<double> &add_sub,
 	                      vector<double> &logic, vector<double> &div_mod)
 {
-	for (int i = 0; i < myNodes.size(); ++i)
+	for (unsigned int i = 0; i < myNodes.size(); ++i)
 	{
 		for (int j = myNodes[i]->ASAP_start; j <= myNodes[i]->ALAP_start; ++j)
 		{
@@ -161,7 +161,7 @@ void cal_TypeDistribution(vector<Node*> myNodes, vector<double> &mult, vector<do
 void cal_ForceDir(vector<Node*> myNodes, vector<double> &mult, vector<double> &add_sub,
 	              vector<double> &logic, vector<double> &div_mod)
 {
-	for (int i = 0; i < myNodes.size(); ++i)
+	for (unsigned int i = 0; i < myNodes.size(); ++i)
 	{
 		if (!myNodes[i]->nodeOp.compare("*"))	// multiplier resource
 		{

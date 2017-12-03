@@ -94,7 +94,7 @@ Node* assign_op_result(string op, string line, const map<string, vector<string> 
 		if (curSym.compare("1")) {
 			if (!checkKey(curSym, my_map)) {
 				cerr << "Error: unexpected symbol: " << curSym << " in following line:" << endl << line << endl;
-				return false;
+				return NULL;
 			}
 			else if (!is_X(curSym, my_map, "input") && !is_X(curSym, my_map,"register")) {
 				cerr << "Error: " << curSym << " is not an input or a variable (register) in following line:" << endl << line << endl;

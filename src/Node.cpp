@@ -1,4 +1,5 @@
 #include <string>
+#include <algorithm>
 #include <vector>
 #include <queue>
 #include "Node.h"
@@ -41,7 +42,7 @@ void Node::addParent(Node* p)
 
 void Node::removeParent(Node* p)
 {
-	for (int i = 0; i < this->parents.size(); ++i)
+	for (unsigned int i = 0; i < this->parents.size(); ++i)
 		if (this->parents[i] == p)
 		{
 			this->parents.erase(parents.begin() + i);
