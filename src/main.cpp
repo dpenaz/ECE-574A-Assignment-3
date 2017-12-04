@@ -241,7 +241,7 @@ int main(int argc, char *argv[])
 	cal_ASAP(myNodes);
 	cal_width(myNodes);
 	cal_TypeDistribution(myNodes);
-	cal_ForceDir(myNodes);  // NOT FULLY IMPLEMENTED...LEFT OFF HERE!!!!!!!!
+	cal_ForceDir(myNodes); 
 
 	printNodes(myNodes);
 
