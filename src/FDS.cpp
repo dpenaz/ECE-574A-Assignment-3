@@ -1,5 +1,6 @@
 #include <iostream>
 #include <iomanip>
+#include <tuple>
 #include "FDS.h"
 
 using namespace std;
@@ -15,25 +16,38 @@ void printNodes(vector<Node*> myNodes)
 		cout << "ASAP: " << myNodes[i]->ASAP_start << endl;
 		cout << "ALAP: " << myNodes[i]->ALAP_start << endl;
 		cout << "Width: " << myNodes[i]->width << endl;
-		cout << "Prob Val: " << myNodes[i]->prob_val << endl  << endl;
+		cout << "Prob Val: " << myNodes[i]->prob_val << endl;
+		cout << "FINAL SCHEDULE: " << myNodes[i]->finalScheduleTime << endl << endl;
 	}
 }
 
-void printDistribution(vector<double> v)
+void printDistribution()
 {
-	for (unsigned int col = 0; col < v.size(); ++col)
+	for (unsigned int i = 0; i <= 3; ++i)
 	{
-		cout << col << "\t";
-		for (unsigned int row = 1; row < v.size(); ++row)
+		switch (i)
 		{
-			if (col == 0)
-				cout << row << "\t";
-			else
-				cout << setprecision(2) << v[row] << "\t";
+			case multi: cout << "Multi" << endl; break;
+			case add_sub: cout << "Add/Sub" << endl; break;
+			case div_mod: cout << "Div/Mod" << endl; break;
+			case logic: cout << "Logic" << endl; break;
+			default: break;
 		}
-		cout << endl;
+	
+		for (unsigned int col = 0; col <= 1; ++col)
+		{
+			cout << "\t";
+			for (unsigned int row = 1; row < op_Prob[i].size(); ++row)
+			{
+				if (col == 0)
+					cout << row << "\t";
+				else
+					cout << setprecision(2) << op_Prob[i][row] << "\t";
+			}
+			cout << endl;
+		}
+		cout << endl << endl;
 	}
-	cout << endl << endl;
 }
 
 void resetFlag(vector<Node*> myNodes)
@@ -139,48 +153,117 @@ void cal_width(vector<Node*> myNodes)
 	}
 }
 
-void cal_TypeDistribution(vector<Node*> myNodes, vector<double> &mult, vector<double> &add_sub,
-	                      vector<double> &logic, vector<double> &div_mod)
+int vectNum(string s)
+{
+	if (!s.compare("*"))	// multiplier resource
+	{
+		return multi;
+	}
+	else if (!s.compare("+") || !s.compare("-"))	// adder/subtractor resource
+	{
+		return add_sub;	//add_subDist
+	}
+	else if (!s.compare("/") || !s.compare("%"))	// divider/modulo resource
+	{
+		return div_mod; //div_modDist
+	}
+	else	// logic/logical resource
+	{
+		return logic;	//logicDist
+	}
+}
+
+void resetTypeDistVectors(vector<Node*> myNodes)
+{
+	for (int i = 0; i <= 3; ++i)
+	{
+		for (int j = 0; j < op_Prob[i].size(); ++j)
+		{
+			op_Prob[i][j] = 0.0;
+		}
+	}
+	cal_TypeDistribution(myNodes);
+}
+
+void cal_TypeDistribution(vector<Node*> myNodes)
 {
 	for (unsigned int i = 0; i < myNodes.size(); ++i)
 	{
-		for (int j = myNodes[i]->ASAP_start; j <= myNodes[i]->ALAP_start; ++j)
+		for (unsigned int j = myNodes[i]->ASAP_start; j <= myNodes[i]->ALAP_start; ++j)
 		{
 			if (!myNodes[i]->nodeOp.compare("*"))	// multiplier resource
-				mult[j] += myNodes[i]->prob_val;
+				op_Prob[multi][j] += myNodes[i]->prob_val;
 			else if (!myNodes[i]->nodeOp.compare("+") || !myNodes[i]->nodeOp.compare("-"))	// adder/subtractor resource
-				add_sub[j] += myNodes[i]->prob_val;
+				op_Prob[add_sub][j] += myNodes[i]->prob_val;
 			else if (!myNodes[i]->nodeOp.compare("/") || !myNodes[i]->nodeOp.compare("%"))	// divider/modulo resource
-				div_mod[j] += myNodes[i]->prob_val;
+				op_Prob[div_mod][j] += myNodes[i]->prob_val;
 			else	// logic/logical resource
-				logic[j] += myNodes[i]->prob_val;
+				op_Prob[logic][j] += myNodes[i]->prob_val;
 		}
 	}
 }
 
-void cal_ForceDir(vector<Node*> myNodes, vector<double> &mult, vector<double> &add_sub,
-	              vector<double> &logic, vector<double> &div_mod)
+void cal_ForceDir(vector<Node*> myNodes)
 {
 	for (unsigned int i = 0; i < myNodes.size(); ++i)
 	{
-		if (!myNodes[i]->nodeOp.compare("*"))	// multiplier resource
+		myNodes[i]->finalScheduleTime = forceDir(myNodes[i], 0, true, true);	// send in zero to begin (no interference for node)
+		myNodes[i]->ALAP_start = myNodes[i]->finalScheduleTime;
+		myNodes[i]->ASAP_start = myNodes[i]->finalScheduleTime;
+		myNodes[i]->prob_val = 1.0;
+		printDistribution();
+		resetTypeDistVectors(myNodes);
+		printDistribution();
+	}
+}
+
+tuple<int, double> forceDir(Node* node, int cycleNum, bool first, bool Successor)
+{
+	if ((cycleNum < node->ASAP_start || node->ALAP_start < cycleNum) && !first)	// check to see if schedule of last node affects the current node.
+		return tuple<0, 0>;
+
+	double forceSum = 100000.0;
+	double tempForce = 0.0;
+	double prob;
+	int timing = 0;
+	
+	int probVec = vectNum(node->nodeOp);
+
+	for (unsigned int cycle = node->ASAP_start; cycle <= node->ALAP_start; ++cycle)
+	{
+		for (unsigned int k = 0; k < op_Prob[probVec].size(); ++k)
 		{
-			for (int j = myNodes[i]->ASAP_start; j <= myNodes[i]->ALAP_start; ++j)
+			if (!first)
 			{
-				
+				if (Successor && (k < cycleNum))
+				{
+					prob = 0.0;
+				}
+				else if (!Successor && (k > cycleNum))
+				{
+					prob = 0.0;
+				}
 			}
+			else if (cycle == k)
+				prob = 1;
+			else
+				prob = 0.0;
+			tempForce += op_Prob[probVec][k] * (prob - node->prob_val);
 		}
-		else if (!myNodes[i]->nodeOp.compare("+") || !myNodes[i]->nodeOp.compare("-"))	// adder/subtractor resource
+	
+		for (unsigned int i = 0; i < node->parents.size(); ++i)		// Calculate force for PREDECESSORs
 		{
-
+			tempForce += forceDir(node->parents[i], cycle, false, false);
 		}
-		else if (!myNodes[i]->nodeOp.compare("/") || !myNodes[i]->nodeOp.compare("%"))	// divider/modulo resource
+		for (unsigned int i = 0; i < node->children.size(); ++i)	// Calculate force for SUCCESSORs
 		{
-
+			tempForce += forceDir(node->children[i], cycle, false, true);
 		}
-		else	// logic/logical resource
+		if (tempForce < forceSum)
 		{
-
+			forceSum = tempForce;
+			timing = cycle;
 		}
 	}
+	return forceSum;
 }

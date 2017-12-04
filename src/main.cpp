@@ -11,6 +11,12 @@
 
 using namespace std;
 
+/****************************
+ ****  Global variables  ****
+ ****************************/
+vector<vector<double>> op_Prob;
+
+
 int main(int argc, char *argv[])
 {
 	const char *arg1, *arg2, *arg3;
@@ -69,19 +75,17 @@ int main(int argc, char *argv[])
 	
 	vector<Node*> myNodes;
 
-	vector<double> multDist;
-	vector<double> add_subDist;
-	vector<double> logicDist;
-	vector<double> div_modDist;
-
 	// Initialize Vector to size of latency
-	for (int i = 0; i <= latency; ++i)
+	for (int i = 0; i <= 3; ++i)
 	{
-		multDist.push_back(0);
-		add_subDist.push_back(0);
-		logicDist.push_back(0);
-		div_modDist.push_back(0);
+		vector<double> newVec;
+		for (int j = 0; j <= latency; ++j)
+		{
+			newVec.push_back(0.0);
+		}
+		op_Prob.push_back(newVec);
 	}
+	
 
 	map<string, vector<string> > var_map;	// Store variable info ex: variables[name][type, input/output/wire]
 	vector<string> storedTokens;
@@ -236,15 +240,13 @@ int main(int argc, char *argv[])
 	cal_ALAP(myNodes, latency);
 	cal_ASAP(myNodes);
 	cal_width(myNodes);
-	cal_TypeDistribution(myNodes, multDist, add_subDist, logicDist, div_modDist);
-	cal_ForceDir(myNodes, multDist, add_subDist, logicDist, div_modDist);  // NOT FULLY IMPLEMENTED...LEFT OFF HERE!!!!!!!!
+	cal_TypeDistribution(myNodes);
+	cal_ForceDir(myNodes);  // NOT FULLY IMPLEMENTED...LEFT OFF HERE!!!!!!!!
 
 	printNodes(myNodes);
 
-	printDistribution(multDist);
-	printDistribution(add_subDist);
-	printDistribution(logicDist);
-	printDistribution(div_modDist);
+	printDistribution();
+
 
 	oss << "endmodule";  //close of module
 

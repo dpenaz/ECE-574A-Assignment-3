@@ -2,6 +2,27 @@
 
 using namespace std;
 
+/****************************
+****  Global variables  ****
+****************************/
+
+extern vector<vector<double>> op_Prob;
+
+/****************************/
+
+enum Probability {
+	multi,
+	add_sub,
+	div_mod,
+	logic
+};
+
+/********************************
+****  Function Delcarations  ****
+********************************/
+
+int vectNum(string s);
+
 void printNodes(vector<Node*> myNodes);
 
 void connectNodes(vector<Node*> myNodes);
@@ -12,10 +33,10 @@ void cal_ASAP(vector<Node*> myNodes);
 
 void cal_width(vector<Node*> myNodes);
 
-void cal_TypeDistribution(vector<Node*> myNodes, vector<double> &mult, vector<double> &add_sub, 
-	                      vector<double> &logic, vector<double> &div_mod);
+void cal_TypeDistribution(vector<Node*> myNodes);
 
-void cal_ForceDir(vector<Node*> myNodes, vector<double> &mult, vector<double> &add_sub,
-	              vector<double> &logic, vector<double> &div_mod);
+void cal_ForceDir(vector<Node*> myNodes);
 
-void printDistribution(vector<double> v);
+tuple<int, double> forceDir(Node* node, int cycleNum, bool first, bool Successor);
+
+void printDistribution();
