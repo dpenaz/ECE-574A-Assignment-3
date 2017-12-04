@@ -212,9 +212,9 @@ void cal_ForceDir(vector<Node*> myNodes)
 		myNodes[i]->ALAP_start = myNodes[i]->finalScheduleTime;
 		myNodes[i]->ASAP_start = myNodes[i]->finalScheduleTime;
 		myNodes[i]->prob_val = 1.0;
-		printDistribution();
+//		printDistribution();
 		resetTypeDistVectors(myNodes);
-		printDistribution();
+//		printDistribution();
 	}
 }
 
