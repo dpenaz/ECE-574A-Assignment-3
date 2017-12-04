@@ -13,6 +13,7 @@ void printNodes(vector<Node*> myNodes)
 		cout << "Num of Parents: " << myNodes[i]->parents.size() << endl;
 		cout << "Num of Children: " << myNodes[i]->children.size() << endl;
 		cout << "Output: " << myNodes[i]->getVerilogCode() << endl;
+		cout << "Operation: " << myNodes[i]->nodeOp << endl;
 		cout << "ASAP: " << myNodes[i]->ASAP_start << endl;
 		cout << "ALAP: " << myNodes[i]->ALAP_start << endl;
 		cout << "Width: " << myNodes[i]->width << endl;
