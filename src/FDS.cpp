@@ -207,7 +207,7 @@ void cal_ForceDir(vector<Node*> myNodes)
 {
 	for (unsigned int i = 0; i < myNodes.size(); ++i)
 	{
-		myNodes[i]->finalScheduleTime = forceDir(myNodes[i], 0, true, true);	// send in zero to begin (no interference for node)
+		myNodes[i]->finalScheduleTime = get<0>(forceDir(myNodes[i], 0, true, true));	// send in zero to begin (no interference for node)
 		myNodes[i]->ALAP_start = myNodes[i]->finalScheduleTime;
 		myNodes[i]->ASAP_start = myNodes[i]->finalScheduleTime;
 		myNodes[i]->prob_val = 1.0;
@@ -220,10 +220,11 @@ void cal_ForceDir(vector<Node*> myNodes)
 tuple<int, double> forceDir(Node* node, int cycleNum, bool first, bool Successor)
 {
 	if ((cycleNum < node->ASAP_start || node->ALAP_start < cycleNum) && !first)	// check to see if schedule of last node affects the current node.
-		return tuple<0, 0>;
+		return { 0,0 };
 
-	double forceSum = 100000.0;
-	double tempForce = 0.0;
+	tuple<int, double> tempForce(-1, 0.0);
+	tuple<int, double> forceSum(-1, 10000.0);
+	
 	double prob;
 	int timing = 0;
 	
@@ -248,21 +249,22 @@ tuple<int, double> forceDir(Node* node, int cycleNum, bool first, bool Successor
 				prob = 1;
 			else
 				prob = 0.0;
-			tempForce += op_Prob[probVec][k] * (prob - node->prob_val);
+			get<1>(tempForce) += op_Prob[probVec][k] * (prob - node->prob_val);
 		}
 	
 		for (unsigned int i = 0; i < node->parents.size(); ++i)		// Calculate force for PREDECESSORs
 		{
-			tempForce += forceDir(node->parents[i], cycle, false, false);
+			get<1>(tempForce) += get<1>(forceDir(node->parents[i], cycle, false, false));
 		}
 		for (unsigned int i = 0; i < node->children.size(); ++i)	// Calculate force for SUCCESSORs
 		{
-			tempForce += forceDir(node->children[i], cycle, false, true);
+			get<1>(tempForce) += get<1>(forceDir(node->children[i], cycle, false, true));
 		}
-		if (tempForce < forceSum)
+		if (get<1>(tempForce) < get<1>(forceSum))
 		{
-			forceSum = tempForce;
-			timing = cycle;
+			get<1>(forceSum) = get<1>(tempForce);
+			if(first)
+				get<0>(forceSum) = cycle;
 		}
 	}
 	return forceSum;
