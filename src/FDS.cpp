@@ -2,6 +2,7 @@
 #include <sstream>
 #include <string>
 #include <list>
+#include <set>
 #include <iomanip>
 #include <tuple>
 #include "FDS.h"
@@ -17,12 +18,36 @@ string stateCode(vector<Node*> myNodes)
 {
 	ostringstream oss;
 	const int nStates = numStates(myNodes);
-	for (unsigned int i = 1; i <= nStates; ++i)
+	for ( int i = 1; i <= nStates; ++i)
 	{
+		set<string> conds;
 		oss << "        " << i + 2 << ": begin" << endl;
 
-		for (unsigned int j = 0; j < myNodes.size(); ++j) {
+		for ( int j = 0; j < myNodes.size(); ++j) {
 			if (myNodes[j]->finalScheduleTime == i) {
+				for (auto it = myNodes[j]->conditions.begin(); it != myNodes[j]->conditions.end(); ++it) {
+					if (conds.find(get<1>(*it)) == conds.end()) {
+						conds.insert(get<1>(*it));
+						if (get<0>(*it))
+							oss << "              if (" << get<1>(*it) << ") begin" << endl;
+						else
+							oss << "              end else begin" << endl;
+					}
+				}
+				vector<string> erase;
+				for (auto it = conds.begin(); it != conds.end(); ++it) {
+					bool found = false;
+					for (auto it2 = myNodes[j]->conditions.begin(); it2 != myNodes[j]->conditions.end(); ++it2) {
+						if (get<1>(*it2) == *it)
+							found = true;
+					}
+					if (!found) {
+						oss << "              end" << endl;
+						erase.push_back(*it);
+					}
+				}
+				for (auto it = erase.begin(); it != erase.end(); ++it)
+					conds.erase(*it);
 				string op = myNodes[j]->nodeOp;
 				list<string> ins = myNodes[j]->inPuts;
 				oss << "             " << myNodes[j]->outPut << " = ";
@@ -55,7 +80,7 @@ string stateCode(vector<Node*> myNodes)
 
 void printNodes(vector<Node*> myNodes)
 {
-	for (unsigned int i = 0; i < myNodes.size(); ++i)
+	for ( int i = 0; i < myNodes.size(); ++i)
 	{
 		cout << "Node #" << i << endl;
 		cout << "Num of Parents: " << myNodes[i]->parents.size() << endl;
@@ -72,7 +97,7 @@ void printNodes(vector<Node*> myNodes)
 
 void printDistribution()
 {
-	for (unsigned int i = 0; i <= 3; ++i)
+	for ( int i = 0; i <= 3; ++i)
 	{
 		switch (i)
 		{
@@ -83,10 +108,10 @@ void printDistribution()
 		default: break;
 		}
 
-		for (unsigned int col = 0; col <= 1; ++col)
+		for ( int col = 0; col <= 1; ++col)
 		{
 			cout << "\t";
-			for (unsigned int row = 1; row < op_Prob[i].size(); ++row)
+			for ( int row = 1; row < op_Prob[i].size(); ++row)
 			{
 				if (col == 0)
 					cout << row << "\t";
@@ -101,7 +126,7 @@ void printDistribution()
 
 void resetFlag(vector<Node*> myNodes)
 {
-	for (unsigned int i = 0; i < myNodes.size(); ++i)
+	for ( int i = 0; i < myNodes.size(); ++i)
 	{
 		myNodes[i]->visitedFlag = false;
 	}
@@ -109,9 +134,9 @@ void resetFlag(vector<Node*> myNodes)
 
 void connectNodes(vector<Node*> myNodes)
 {
-	for (unsigned int i = 0; i < myNodes.size(); ++i)
+	for ( int i = 0; i < myNodes.size(); ++i)
 	{
-		for (unsigned int j = i; j < myNodes.size(); ++j)
+		for ( int j = i; j < myNodes.size(); ++j)
 		{
 			if (myNodes[j]->chkIfParent(myNodes[i]->outPut))
 			{
@@ -130,7 +155,7 @@ void cal_ALAP(vector<Node*> myNodes, int cycles)
 	while (!done)
 	{
 		done = true;
-		for (unsigned int i = 0; i < myNodes.size(); ++i)
+		for ( int i = 0; i < myNodes.size(); ++i)
 		{
 			ready = true;
 			if (myNodes[i]->children.size() == 0) // bottom of tree
@@ -142,7 +167,7 @@ void cal_ALAP(vector<Node*> myNodes, int cycles)
 			{
 				time = 100000;
 				temp = 0;
-				for (unsigned int j = 0; j < myNodes[i]->children.size(); ++j)	//check children to see if scheduled
+				for ( int j = 0; j < myNodes[i]->children.size(); ++j)	//check children to see if scheduled
 				{
 					if (myNodes[i]->children[j]->ALAP_start == 0)
 					{
@@ -168,7 +193,7 @@ void cal_ASAP(vector<Node*> myNodes)
 	while (!done)
 	{
 		done = true;
-		for (unsigned int i = 0; i < myNodes.size(); ++i)
+		for ( int i = 0; i < myNodes.size(); ++i)
 		{
 			if (myNodes[i]->parents.size() == 0) // Top of tree
 				myNodes[i]->ASAP_start = 1;
@@ -176,7 +201,7 @@ void cal_ASAP(vector<Node*> myNodes)
 			{
 				time = 0;
 				temp = 0;
-				for (unsigned int j = 0; j < myNodes[i]->parents.size(); ++j)	//check parents to see if scheduled
+				for ( int j = 0; j < myNodes[i]->parents.size(); ++j)	//check parents to see if scheduled
 				{
 					if (myNodes[i]->parents[j]->ASAP_start == 0)
 					{
@@ -196,7 +221,7 @@ void cal_ASAP(vector<Node*> myNodes)
 
 void cal_width(vector<Node*> myNodes)
 {
-	for (unsigned int i = 0; i < myNodes.size(); ++i)
+	for ( int i = 0; i < myNodes.size(); ++i)
 	{
 		myNodes[i]->setWidth();
 	}
@@ -236,9 +261,9 @@ void resetTypeDistVectors(vector<Node*> myNodes)
 
 void cal_TypeDistribution(vector<Node*> myNodes)
 {
-	for (unsigned int i = 0; i < myNodes.size(); ++i)
+	for ( int i = 0; i < myNodes.size(); ++i)
 	{
-		for (unsigned int j = myNodes[i]->ASAP_start; j <= myNodes[i]->ALAP_start; ++j)
+		for ( int j = myNodes[i]->ASAP_start; j <= myNodes[i]->ALAP_start; ++j)
 		{
 			if (!myNodes[i]->nodeOp.compare("*"))	// multiplier resource
 				op_Prob[multi][j] += myNodes[i]->prob_val;
@@ -254,7 +279,7 @@ void cal_TypeDistribution(vector<Node*> myNodes)
 
 void cal_ForceDir(vector<Node*> myNodes)
 {
-	for (unsigned int i = 0; i < myNodes.size(); ++i)
+	for ( int i = 0; i < myNodes.size(); ++i)
 	{
 		myNodes[i]->finalScheduleTime = get<0>(forceDir(myNodes[i], 0, true, true));	// send in zero to begin (no interference for node)
 		myNodes[i]->ALAP_start = myNodes[i]->finalScheduleTime;
@@ -279,9 +304,9 @@ tuple<int, double> forceDir(Node* node, int cycleNum, bool first, bool Successor
 
 	int probVec = vectNum(node->nodeOp);
 
-	for (unsigned int cycle = node->ASAP_start; cycle <= node->ALAP_start; ++cycle)
+	for ( int cycle = node->ASAP_start; cycle <= node->ALAP_start; ++cycle)
 	{
-		for (unsigned int k = 0; k < op_Prob[probVec].size(); ++k)
+		for ( int k = 0; k < op_Prob[probVec].size(); ++k)
 		{
 			if (!first)
 			{
@@ -301,11 +326,11 @@ tuple<int, double> forceDir(Node* node, int cycleNum, bool first, bool Successor
 			get<1>(tempForce) += op_Prob[probVec][k] * (prob - node->prob_val);
 		}
 
-		for (unsigned int i = 0; i < node->parents.size(); ++i)		// Calculate force for PREDECESSORs
+		for ( int i = 0; i < node->parents.size(); ++i)		// Calculate force for PREDECESSORs
 		{
 			get<1>(tempForce) += get<1>(forceDir(node->parents[i], cycle, false, false));
 		}
-		for (unsigned int i = 0; i < node->children.size(); ++i)	// Calculate force for SUCCESSORs
+		for ( int i = 0; i < node->children.size(); ++i)	// Calculate force for SUCCESSORs
 		{
 			get<1>(tempForce) += get<1>(forceDir(node->children[i], cycle, false, true));
 		}
