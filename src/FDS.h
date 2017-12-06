@@ -7,6 +7,7 @@ using namespace std;
 ****************************/
 
 extern vector<vector<double>> op_Prob;
+extern vector<Node*> myNodes;
 
 /****************************/
 

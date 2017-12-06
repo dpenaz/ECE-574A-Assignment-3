@@ -16,6 +16,7 @@ using namespace std;
  ****  Global variables  ****
  ****************************/
 vector<vector<double>> op_Prob;
+vector<Node*> myNodes;
 
 ostringstream userVars;
 vector<string> RegAndOuts;
@@ -76,7 +77,6 @@ int main(int argc, char *argv[])
 	string token;
 	ostringstream oss;
 
-	vector<Node*> myNodes;
 	int Ifcount = 0;
 	vector<tuple<bool, string>> conditions;	// true "if" false "else"
 

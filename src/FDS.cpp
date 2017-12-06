@@ -293,31 +293,38 @@ void cal_ForceDir(vector<Node*> myNodes)
 
 tuple<int, double> forceDir(Node* node, int cycleNum, bool first, bool Successor)
 {
+	node->visitedFlag = true;
 	if ((cycleNum < node->ASAP_start || node->ALAP_start < cycleNum) && !first)	// check to see if schedule of last node affects the current node.
 		return { 0,0 };
 
 	tuple<int, double> tempForce(-1, 0.0);
 	tuple<int, double> forceSum(-1, 10000.0);
 
-	double prob = 0;
+	double prob;
 	int timing = 0;
 
 	int probVec = vectNum(node->nodeOp);
 
 	for ( int cycle = node->ASAP_start; cycle <= node->ALAP_start; ++cycle)
 	{
+		if (first)
+			resetFlag(myNodes);
 		for ( int k = 0; k < op_Prob[probVec].size(); ++k)
 		{
 			if (!first)
 			{
-				if (Successor && (k < cycleNum))
+				if (Successor && (k <= cycleNum))
 				{
 					prob = 0.0;
 				}
-				else if (!Successor && (k > cycleNum))
+				else if (!Successor && (k >= cycleNum))
 				{
 					prob = 0.0;
 				}
+				else if (cycle == k)
+					prob = 1;
+				else
+					prob = 0.0;
 			}
 			else if (cycle == k)
 				prob = 1;
@@ -328,11 +335,13 @@ tuple<int, double> forceDir(Node* node, int cycleNum, bool first, bool Successor
 
 		for ( int i = 0; i < node->parents.size(); ++i)		// Calculate force for PREDECESSORs
 		{
-			get<1>(tempForce) += get<1>(forceDir(node->parents[i], cycle, false, false));
+			if (!node->parents[i]->visitedFlag)
+				get<1>(tempForce) += get<1>(forceDir(node->parents[i], cycle, false, false));
 		}
 		for ( int i = 0; i < node->children.size(); ++i)	// Calculate force for SUCCESSORs
 		{
-			get<1>(tempForce) += get<1>(forceDir(node->children[i], cycle, false, true));
+			if (!node->children[i]->visitedFlag)
+				get<1>(tempForce) += get<1>(forceDir(node->children[i], cycle, false, true));
 		}
 		if (get<1>(tempForce) < get<1>(forceSum))
 		{
