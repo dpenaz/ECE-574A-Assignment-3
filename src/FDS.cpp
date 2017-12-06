@@ -12,7 +12,12 @@ using namespace std;
 
 int numStates(vector<Node*> myNodes)
 {
-	return myNodes[myNodes.size() - 1]->finalScheduleTime;
+	int max = 0;
+	for (auto it = myNodes.begin(); it != myNodes.end(); ++it) {
+		if ((*it)->finalScheduleTime > max)
+			max = (*it)->finalScheduleTime;
+	}
+	return max;
 }
 
 string stateCode(vector<Node*> myNodes)
