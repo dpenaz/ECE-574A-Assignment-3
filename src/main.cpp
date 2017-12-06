@@ -15,8 +15,6 @@ using namespace std;
 /****************************
  ****  Global variables  ****
  ****************************/
-****  Global variables  ****
-****************************/
 vector<vector<double>> op_Prob;
 
 ostringstream userVars;
