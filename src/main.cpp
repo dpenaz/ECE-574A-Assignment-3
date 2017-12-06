@@ -25,19 +25,19 @@ int main(int argc, char *argv[])
 {
 	const char *arg1, *arg2, *arg3;
 	if (argc == 1) {
-		arg1 = "C:\\Users\\Dillon\\Desktop\\ECE-574A\\git-assignment3\\assignment3_testfiles_full\\if tests\\test_if4.c";
+		arg1 = "C:\\Users\\Devan\\Documents\\578 - Computer-Aided Logic Design\\assignment3_testfiles\\standard tests\\hls_test3.c";
 		argc = 2;
 	}
 	else
 		arg1 = argv[1];
 	if (argc == 2) {
-		arg2 = "5";
+		arg2 = "14";
 		argc = 3;
 	}
 	else
 		arg2 = argv[2];
 	if (argc == 3) {
-		arg3 = "C:\\Users\\Dillon\\Desktop\\ECE-574A\\git-assignment3 - Copy\\out.v";
+		arg3 = "C:\\Users\\Devan\\Documents\\578 - Computer-Aided Logic Design\\assignment3_testfiles\\out.v";
 		argc = 4;
 	}
 	else
