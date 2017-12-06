@@ -5,6 +5,11 @@
 
 using namespace std;
 
+int numStates(vector<Node*> myNodes)
+{
+	return myNodes[myNodes.size() - 1]->finalScheduleTime;
+}
+
 void printNodes(vector<Node*> myNodes)
 {
 	for (unsigned int i = 0; i < myNodes.size(); ++i)

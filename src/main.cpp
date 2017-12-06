@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <cmath>
 #include <sstream>
 #include <vector>
 #include <string>
@@ -16,12 +17,13 @@ using namespace std;
  ****************************/
 vector<vector<double>> op_Prob;
 
+ostringstream userVars;
 
 int main(int argc, char *argv[])
 {
 	const char *arg1, *arg2, *arg3;
 	if (argc == 1) {
-		arg1 = "C:\\Users\\Devan\\Documents\\578 - Computer-Aided Logic Design\\assignment3_testfiles\\standard tests\\hls_test2.c";
+		arg1 = "C:\\Users\\Dillon\\Desktop\\ECE-574A\\git-assignment3\\assignment3_testfiles_full\\standard tests\\hls_test2.c";
 		argc = 2;
 	}
 	else
@@ -32,8 +34,8 @@ int main(int argc, char *argv[])
 	}
 	else
 		arg2 = argv[2];
-	if (argc == 3) { //DEBUG/DEV CODE
-		arg3 = "C:\\Users\\Devan\\Documents\\578 - Computer-Aided Logic Design\\assignment3_testfiles\\out.v";
+	if (argc == 3) {
+		arg3 = "C:\\Users\\Dillon\\Desktop\\ECE-574A\\git-assignment3\\out.v";
 		argc = 4;
 	}
 	else
@@ -88,6 +90,7 @@ int main(int argc, char *argv[])
 	
 
 	map<string, vector<string> > var_map;	// Store variable info ex: variables[name][type, input/output/wire]
+
 	vector<string> storedTokens;
 
 	for (string line; getline(infile, line);)	// Pass through all lines of code
@@ -264,12 +267,41 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	int nStates = numStates(myNodes)+3; //
+	int nStateBits = ceil(log2(nStates));
+
 	finalOutFile << "`timescale 1ns / 1ps" << endl << endl;
 
 	finalOutFile << "module HSLM(Clk, Rst, Start, Done, " + var + ");" << endl;
+	finalOutFile << "input Clk, Rst, Start;" << endl <<
+		"output Done;" << endl <<
+		"reg [" << nStateBits - 1 << ":0] State;" << endl << endl;
+
+	finalOutFile << userVars.str() << endl;
+
+	finalOutFile << "always @(posedge Clk) begin" << endl;
+
+	finalOutFile << "    if (Rst) begin" << endl <<
+		    "        //set all outputs to 0" << endl <<
+		    "        State <= 0;" << endl <<
+		    "    end" << endl;
+
+	finalOutFile <<  "    case (State)" << endl <<
+		"        0: begin if (Start) State <= 3; end" << endl << //Wait
+		"        1: begin Done <= 1; State <= 2; end" << endl << // Final
+		"        2: State <= 0;" << endl; //Done
+
+
+		
+
+	finalOutFile << "    endcase" << endl;
+
+	finalOutFile << "end" << endl;
 
 	finalOutFile << oss.str();
 	finalOutFile.close();
+
+	cout << nStates << "states" << endl;
 
 	return 0;
 }
@@ -365,6 +397,8 @@ int grabVariables(string line, map<string, vector<string> > &my_map)
 		cerr << "Error: expected another variable in line:" << endl << line << endl;
 		return 4;
 	}
+
+	userVars << outstr << ";" << endl;
 
 	return 0;
 }
