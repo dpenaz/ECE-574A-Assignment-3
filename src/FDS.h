@@ -25,6 +25,8 @@ int vectNum(string s);
 
 int numStates(vector<Node*> myNodes);
 
+string stateCode(vector<Node*> myNodes);
+
 void printNodes(vector<Node*> myNodes);
 
 void connectNodes(vector<Node*> myNodes);

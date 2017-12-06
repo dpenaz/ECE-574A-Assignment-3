@@ -15,9 +15,12 @@ using namespace std;
 /****************************
  ****  Global variables  ****
  ****************************/
+****  Global variables  ****
+****************************/
 vector<vector<double>> op_Prob;
 
 ostringstream userVars;
+vector<string> RegAndOuts;
 
 int main(int argc, char *argv[])
 {
@@ -74,7 +77,7 @@ int main(int argc, char *argv[])
 
 	string token;
 	ostringstream oss;
-	
+
 	vector<Node*> myNodes;
 	int Ifcount = 0;
 	vector<tuple<bool, string>> conditions;	// true "if" false "else"
@@ -89,7 +92,7 @@ int main(int argc, char *argv[])
 		}
 		op_Prob.push_back(newVec);
 	}
-	
+
 
 	map<string, vector<string> > var_map;	// Store variable info ex: variables[name][type, input/output/wire]
 
@@ -98,12 +101,12 @@ int main(int argc, char *argv[])
 	for (string line; getline(infile, line);)	// Pass through all lines of code
 	{
 		Node* pNode;
-		istringstream iss{line};
+		istringstream iss{ line };
 
 		bool eqFound = false, otherFound = false;;
 		while (iss >> token)	// Pass through each token in line
 		{
-			
+
 			if (!token.compare("+")) {	// ADD and INC
 				otherFound = true;
 				pNode = assign_op_result("+", line, var_map);
@@ -165,7 +168,7 @@ int main(int argc, char *argv[])
 				otherFound = true;
 				pNode = MUX2x1_(line, var_map);
 				pNode->conditions = conditions;
-				if(pNode == NULL)
+				if (pNode == NULL)
 					return 1;
 				myNodes.push_back(pNode);
 				break;
@@ -278,7 +281,7 @@ int main(int argc, char *argv[])
 	cal_ASAP(myNodes);
 	cal_width(myNodes);
 	cal_TypeDistribution(myNodes);
-	cal_ForceDir(myNodes); 
+	cal_ForceDir(myNodes);
 
 	printNodes(myNodes);
 
@@ -301,7 +304,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	int nStates = numStates(myNodes)+3; //
+	int nStates = numStates(myNodes) + 3; //
 	int nStateBits = ceil(log2(nStates));
 
 	finalOutFile << "`timescale 1ns / 1ps" << endl << endl;
@@ -315,18 +318,25 @@ int main(int argc, char *argv[])
 
 	finalOutFile << "always @(posedge Clk) begin" << endl;
 
-	finalOutFile << "    if (Rst) begin" << endl <<
-		    "        //set all outputs to 0" << endl <<
-		    "        State <= 0;" << endl <<
-		    "    end" << endl;
+	finalOutFile << "    if (Rst) begin" << endl;
 
-	finalOutFile <<  "    case (State)" << endl <<
+	finalOutFile << "        ";
+	for (auto it = RegAndOuts.begin(); it != RegAndOuts.end(); ++it)
+	{
+		finalOutFile << *it << " <= 0; ";
+	}
+	finalOutFile << endl;
+
+	finalOutFile << "        State <= 0; Done <= 0;" << endl <<
+		"    end" << endl;
+
+	finalOutFile << "    case (State)" << endl <<
 		"        0: begin if (Start) State <= 3; end" << endl << //Wait
 		"        1: begin Done <= 1; State <= 2; end" << endl << // Final
 		"        2: State <= 0;" << endl; //Done
 
 
-		
+	finalOutFile << stateCode(myNodes) << endl;
 
 	finalOutFile << "    endcase" << endl;
 
@@ -364,9 +374,12 @@ int grabVariables(string line, map<string, vector<string> > &my_map)
 	string outstr;
 	if (!func.compare("input"))
 		outstr = "input";
-	else if (!func.compare("output"))
+	else if (!func.compare("output")) {
+		RegAndOuts.push_back(token);
 		outstr = "output";
+	}
 	else if (!func.compare("variable")) {
+		RegAndOuts.push_back(token);
 		outstr = "reg";
 		reg = true;
 	}
@@ -376,7 +389,7 @@ int grabVariables(string line, map<string, vector<string> > &my_map)
 	}
 	if (!type.compare("Int1"))
 		outstr = outstr + " signed ";
-	else if(!type.compare("UInt1"))
+	else if (!type.compare("UInt1"))
 		outstr = outstr + " ";
 	else if (!type.compare("Int2"))
 		outstr = outstr + " signed [1:0] ";

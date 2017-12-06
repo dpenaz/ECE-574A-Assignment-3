@@ -1,4 +1,7 @@
 #include <iostream>
+#include <sstream>
+#include <string>
+#include <list>
 #include <iomanip>
 #include <tuple>
 #include "FDS.h"
@@ -8,6 +11,46 @@ using namespace std;
 int numStates(vector<Node*> myNodes)
 {
 	return myNodes[myNodes.size() - 1]->finalScheduleTime;
+}
+
+string stateCode(vector<Node*> myNodes)
+{
+	ostringstream oss;
+	const int nStates = numStates(myNodes);
+	for (unsigned int i = 1; i <= nStates; ++i)
+	{
+		oss << "        " << i + 2 << ": begin" << endl;
+
+		for (unsigned int j = 0; j < myNodes.size(); ++j) {
+			if (myNodes[j]->finalScheduleTime == i) {
+				string op = myNodes[j]->nodeOp;
+				list<string> ins = myNodes[j]->inPuts;
+				oss << "             " << myNodes[j]->outPut << " = ";
+				if (!op.compare("=")) {
+					oss << ins.front() << ";" << endl;
+				}
+				else if (op.compare("%")) {
+					oss << ins.front() << " " << op << " " << ins.back() << ";" << endl;
+				}
+				else {
+					string in1 = ins.front();
+					ins.pop_front();
+					string in2 = ins.front();
+					ins.pop_front();
+					string in3 = ins.front();
+					oss << in1 << " " << op << " " << in2 << " : " << in3 << ";" << endl;
+				}
+			}
+		}
+
+		if (i < nStates)
+			oss << "             State <= State + 1;" << endl;
+		else
+			oss << "             State <= 1;" << endl;
+
+		oss << "        end" << endl;
+	}
+	return oss.str();
 }
 
 void printNodes(vector<Node*> myNodes)
@@ -33,13 +76,13 @@ void printDistribution()
 	{
 		switch (i)
 		{
-			case multi: cout << "Multi" << endl; break;
-			case add_sub: cout << "Add/Sub" << endl; break;
-			case div_mod: cout << "Div/Mod" << endl; break;
-			case logic: cout << "Logic" << endl; break;
-			default: break;
+		case multi: cout << "Multi" << endl; break;
+		case add_sub: cout << "Add/Sub" << endl; break;
+		case div_mod: cout << "Div/Mod" << endl; break;
+		case logic: cout << "Logic" << endl; break;
+		default: break;
 		}
-	
+
 		for (unsigned int col = 0; col <= 1; ++col)
 		{
 			cout << "\t";
@@ -94,7 +137,7 @@ void cal_ALAP(vector<Node*> myNodes, int cycles)
 			{
 				time = cycles - myNodes[i]->latency + 1;
 				myNodes[i]->ALAP_start = time;
-			}	
+			}
 			else
 			{
 				time = 100000;
@@ -217,9 +260,9 @@ void cal_ForceDir(vector<Node*> myNodes)
 		myNodes[i]->ALAP_start = myNodes[i]->finalScheduleTime;
 		myNodes[i]->ASAP_start = myNodes[i]->finalScheduleTime;
 		myNodes[i]->prob_val = 1.0;
-//		printDistribution();
+		//		printDistribution();
 		resetTypeDistVectors(myNodes);
-//		printDistribution();
+		//		printDistribution();
 	}
 }
 
@@ -230,10 +273,10 @@ tuple<int, double> forceDir(Node* node, int cycleNum, bool first, bool Successor
 
 	tuple<int, double> tempForce(-1, 0.0);
 	tuple<int, double> forceSum(-1, 10000.0);
-	
+
 	double prob;
 	int timing = 0;
-	
+
 	int probVec = vectNum(node->nodeOp);
 
 	for (unsigned int cycle = node->ASAP_start; cycle <= node->ALAP_start; ++cycle)
@@ -257,7 +300,7 @@ tuple<int, double> forceDir(Node* node, int cycleNum, bool first, bool Successor
 				prob = 0.0;
 			get<1>(tempForce) += op_Prob[probVec][k] * (prob - node->prob_val);
 		}
-	
+
 		for (unsigned int i = 0; i < node->parents.size(); ++i)		// Calculate force for PREDECESSORs
 		{
 			get<1>(tempForce) += get<1>(forceDir(node->parents[i], cycle, false, false));
@@ -269,7 +312,7 @@ tuple<int, double> forceDir(Node* node, int cycleNum, bool first, bool Successor
 		if (get<1>(tempForce) < get<1>(forceSum))
 		{
 			get<1>(forceSum) = get<1>(tempForce);
-			if(first)
+			if (first)
 				get<0>(forceSum) = cycle;
 		}
 	}
