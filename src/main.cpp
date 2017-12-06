@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 {
 	const char *arg1, *arg2, *arg3;
 	if (argc == 1) {
-		arg1 = "C:\\Users\\Dillon\\Desktop\\ECE-574A\\git-assignment3\\assignment3_testfiles_full\\standard tests\\hls_test2.c";
+		arg1 = "C:\\Users\\Dillon\\Desktop\\ECE-574A\\git-assignment3\\assignment3_testfiles_full\\standard tests\\hls_test4.c";
 		argc = 2;
 	}
 	else
@@ -319,9 +319,9 @@ int main(int argc, char *argv[])
 	finalOutFile << "    if (Rst) begin" << endl;
 
 	finalOutFile << "        ";
-	for (auto it = RegAndOuts.begin(); it != RegAndOuts.end(); ++it)
+	for (int i = 0; i < RegAndOuts.size(); i++)
 	{
-		finalOutFile << *it << " <= 0; ";
+		finalOutFile << RegAndOuts[i] << " <= 0; ";
 	}
 	finalOutFile << endl;
 
@@ -368,16 +368,15 @@ int grabVariables(string line, map<string, vector<string> > &my_map)
 		return 2;
 	}
 
-	bool reg = false;
+	bool reg = false, out = false;
 	string outstr;
 	if (!func.compare("input"))
 		outstr = "input";
 	else if (!func.compare("output")) {
-		RegAndOuts.push_back(token);
 		outstr = "output";
+		out = true;
 	}
 	else if (!func.compare("variable")) {
-		RegAndOuts.push_back(token);
 		outstr = "reg";
 		reg = true;
 	}
@@ -430,6 +429,8 @@ int grabVariables(string line, map<string, vector<string> > &my_map)
 		outstr = outstr + token;
 		if (token.back() == ',')
 			token.pop_back();
+		if (reg || out)
+			RegAndOuts.push_back(token);
 		vector<string> newVector;
 		newVector.push_back(reg ? "register" : func);
 		newVector.push_back(type);

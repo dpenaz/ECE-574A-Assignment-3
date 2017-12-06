@@ -274,7 +274,7 @@ tuple<int, double> forceDir(Node* node, int cycleNum, bool first, bool Successor
 	tuple<int, double> tempForce(-1, 0.0);
 	tuple<int, double> forceSum(-1, 10000.0);
 
-	double prob;
+	double prob = 0;
 	int timing = 0;
 
 	int probVec = vectNum(node->nodeOp);
