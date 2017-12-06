@@ -1,6 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
 #include <list>
 #include <set>
 #include <iomanip>
@@ -20,34 +21,35 @@ string stateCode(vector<Node*> myNodes)
 	const int nStates = numStates(myNodes);
 	for ( int i = 1; i <= nStates; ++i)
 	{
-		set<string> conds;
+		vector<tuple<bool, string>> conds;
 		oss << "        " << i + 2 << ": begin" << endl;
 
 		for ( int j = 0; j < myNodes.size(); ++j) {
 			if (myNodes[j]->finalScheduleTime == i) {
+
+
 				for (auto it = myNodes[j]->conditions.begin(); it != myNodes[j]->conditions.end(); ++it) {
-					if (conds.find(get<1>(*it)) == conds.end()) {
-						conds.insert(get<1>(*it));
-						if (get<0>(*it))
-							oss << "              if (" << get<1>(*it) << ") begin" << endl;
-						else
-							oss << "              end else begin" << endl;
+					if (conds.size() == 0) {
+						conds.push_back(*it);
+						oss << "            if (" << get<1>(*it) << ") begin" << endl;
+					} else {
+						if (conds.size() >= 2 && !get<1>(conds[conds.size()-2]).compare(get<1>(*it))) {
+							oss << "            end" << endl;
+							conds.pop_back();
+						} else if (get<1>(conds.back()).compare(get<1>(*it))) {
+							conds.push_back(*it);
+							oss << "            if (" << get<1>(*it) << ") begin" << endl;
+						} else {
+							if (get<0>(conds.back()) != get<0>(*it)) {
+								oss << "            end else begin" << endl;
+								conds.pop_back();
+								conds.push_back(*it);
+							}
+						}
 					}
 				}
-				vector<string> erase;
-				for (auto it = conds.begin(); it != conds.end(); ++it) {
-					bool found = false;
-					for (auto it2 = myNodes[j]->conditions.begin(); it2 != myNodes[j]->conditions.end(); ++it2) {
-						if (get<1>(*it2) == *it)
-							found = true;
-					}
-					if (!found) {
-						oss << "              end" << endl;
-						erase.push_back(*it);
-					}
-				}
-				for (auto it = erase.begin(); it != erase.end(); ++it)
-					conds.erase(*it);
+
+
 				string op = myNodes[j]->nodeOp;
 				list<string> ins = myNodes[j]->inPuts;
 				oss << "             " << myNodes[j]->outPut << " = ";
@@ -67,6 +69,9 @@ string stateCode(vector<Node*> myNodes)
 				}
 			}
 		}
+		
+		for (auto it = conds.begin(); it != conds.end(); ++it)
+			oss << "            end" << endl;
 
 		if (i < nStates)
 			oss << "             State <= State + 1;" << endl;

@@ -25,19 +25,19 @@ int main(int argc, char *argv[])
 {
 	const char *arg1, *arg2, *arg3;
 	if (argc == 1) {
-		arg1 = "C:\\Users\\Dillon\\Desktop\\ECE-574A\\git-assignment3\\assignment3_testfiles_full\\if tests\\test_if4.c";
+		arg1 = "C:\\Users\\Dillon\\Desktop\\ECE-574A\\ECE-574A-Assignment-3\\assignment3_testfiles_full\\error tests\\error4.c";
 		argc = 2;
 	}
 	else
 		arg1 = argv[1];
 	if (argc == 2) {
-		arg2 = "5";
+		arg2 = "40";
 		argc = 3;
 	}
 	else
 		arg2 = argv[2];
 	if (argc == 3) {
-		arg3 = "C:\\Users\\Dillon\\Desktop\\ECE-574A\\git-assignment3 - Copy\\out.v";
+		arg3 = "C:\\Users\\Dillon\\Desktop\\ECE-574A\\ECE-574A-Assignment-3\\out.v";
 		argc = 4;
 	}
 	else
@@ -96,6 +96,7 @@ int main(int argc, char *argv[])
 
 	vector<string> storedTokens;
 
+	string lastCond;
 	for (string line; getline(infile, line);)	// Pass through all lines of code
 	{
 		Node* pNode;
@@ -108,9 +109,9 @@ int main(int argc, char *argv[])
 			if (!token.compare("+")) {	// ADD and INC
 				otherFound = true;
 				pNode = assign_op_result("+", line, var_map);
-				pNode->conditions = conditions;
 				if (pNode == NULL)
 					return 1;
+				pNode->conditions = conditions;
 				myNodes.push_back(pNode);
 				break;
 			}
@@ -120,90 +121,90 @@ int main(int argc, char *argv[])
 			else if (!token.compare("-")) {	// SUB and DEC
 				otherFound = true;
 				pNode = assign_op_result("-", line, var_map);
-				pNode->conditions = conditions;
 				if (pNode == NULL)
 					return 1;
+				pNode->conditions = conditions;
 				myNodes.push_back(pNode);
 				break;
 			}
 			else if (!token.compare("*")) {	// MUL
 				otherFound = true;
 				pNode = assign_op_result("*", line, var_map);
-				pNode->conditions = conditions;
 				if (pNode == NULL)
 					return 1;
+				pNode->conditions = conditions;
 				myNodes.push_back(pNode);
 				break;
 			}
 			else if (!token.compare(">")) {	// COMP (gt output)
 				otherFound = true;
 				pNode = assign_op_result(">", line, var_map);
-				pNode->conditions = conditions;
 				if (pNode == NULL)
 					return 1;
+				pNode->conditions = conditions;
 				myNodes.push_back(pNode);
 				break;
 			}
 			else if (!token.compare("<")) {	// COMP (lt output)
 				otherFound = true;
 				pNode = assign_op_result("<", line, var_map);
-				pNode->conditions = conditions;
 				if (pNode == NULL)
 					return 1;
+				pNode->conditions = conditions;
 				myNodes.push_back(pNode);
 				break;
 			}
 			else if (!token.compare("==")) {// COMP (eq output)
 				otherFound = true;
 				pNode = assign_op_result("==", line, var_map);
-				pNode->conditions = conditions;
 				if (pNode == NULL)
 					return 1;
+				pNode->conditions = conditions;
 				myNodes.push_back(pNode);
 				break;
 			}
 			else if (!token.compare("?") || !token.compare(":")) {	// MUX2x1
 				otherFound = true;
 				pNode = MUX2x1_(line, var_map);
-				pNode->conditions = conditions;
 				if (pNode == NULL)
 					return 1;
+				pNode->conditions = conditions;
 				myNodes.push_back(pNode);
 				break;
 			}
 			else if (!token.compare(">>")) { // SHR
 				otherFound = true;
 				pNode = assign_op_result(">>", line, var_map);
-				pNode->conditions = conditions;
 				if (pNode == NULL)
 					return 1;
+				pNode->conditions = conditions;
 				myNodes.push_back(pNode);
 				break;
 			}
 			else if (!token.compare("<<")) { // SHL
 				otherFound = true;
 				pNode = assign_op_result("<<", line, var_map);
-				pNode->conditions = conditions;
 				if (pNode == NULL)
 					return 1;
+				pNode->conditions = conditions;
 				myNodes.push_back(pNode);
 				break;
 			}
 			else if (!token.compare("/")) {	// DIV
 				otherFound = true;
 				pNode = assign_op_result("/", line, var_map);
-				pNode->conditions = conditions;
 				if (pNode == NULL)
 					return 1;
+				pNode->conditions = conditions;
 				myNodes.push_back(pNode);
 				break;
 			}
 			else if (!token.compare("%")) {	// MOD
 				otherFound = true;
 				pNode = assign_op_result("%", line, var_map);
-				pNode->conditions = conditions;
 				if (pNode == NULL)
 					return 1;
+				pNode->conditions = conditions;
 				myNodes.push_back(pNode);
 				break;
 			}
@@ -221,13 +222,13 @@ int main(int argc, char *argv[])
 			}
 			else if (!token.compare("else")) { // ELSE statment
 				++Ifcount;
-				token = get<1>(conditions.back());
-				tuple<bool, string> cond(false, token);
+				tuple<bool, string> cond(false, lastCond);
 				conditions.push_back(cond);
 				break;
 			}
 			else if (!token.compare("}")) { // End of condition
 				--Ifcount;
+				lastCond = get<1>(conditions.back());
 				conditions.pop_back();
 				break;
 			}
@@ -265,9 +266,9 @@ int main(int argc, char *argv[])
 		}
 		if (eqFound && !otherFound) {
 			pNode = REG_(line, var_map);
-			pNode->conditions = conditions;
 			if (pNode == NULL)
 				return 1;
+			pNode->conditions = conditions;
 			myNodes.push_back(pNode);
 		}
 	}
@@ -326,7 +327,7 @@ int main(int argc, char *argv[])
 	finalOutFile << endl;
 
 	finalOutFile << "        State <= 0; Done <= 0;" << endl <<
-		"    end" << endl;
+		"    end else begin" << endl;
 
 	finalOutFile << "    case (State)" << endl <<
 		"        0: begin if (Start) State <= 3; end" << endl << //Wait
@@ -336,14 +337,13 @@ int main(int argc, char *argv[])
 
 	finalOutFile << stateCode(myNodes) << endl;
 
-	finalOutFile << "    endcase" << endl;
+	finalOutFile << "    endcase" << endl <<
+		"    end" << endl;
 
 	finalOutFile << "end" << endl;
 
 	finalOutFile << oss.str();
 	finalOutFile.close();
-
-	cout << nStates << "states" << endl;
 
 	return 0;
 }
