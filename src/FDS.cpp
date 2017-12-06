@@ -33,7 +33,10 @@ string stateCode(vector<Node*> myNodes)
 						conds.push_back(*it);
 						oss << "            if (" << get<1>(*it) << ") begin" << endl;
 					} else {
-						if (conds.size() >= 2 && !get<1>(conds[conds.size()-2]).compare(get<1>(*it))) {
+						auto endit = myNodes[j]->conditions.rbegin();
+						if (!get<1>(conds[conds.size() - 1]).compare(get<1>(*endit)) && get<0>(conds[conds.size() - 1]) == get<0>(*endit))
+							;
+						else if (conds.size() >= 2 && !get<1>(conds[conds.size()-2]).compare(get<1>(*it))) {
 							oss << "            end" << endl;
 							conds.pop_back();
 						} else if (get<1>(conds.back()).compare(get<1>(*it))) {
@@ -48,6 +51,19 @@ string stateCode(vector<Node*> myNodes)
 						}
 					}
 				}
+
+				outer:
+					for (auto it = conds.begin(); it != conds.end(); ++it) {
+						bool found2 = false;
+						for (auto it2 = myNodes[j]->conditions.begin(); it2 != myNodes[j]->conditions.end(); ++it2)
+							if (!get<1>(*it).compare(get<1>(*it2)))
+								found2 = true;
+						if (!found2) {
+							conds.erase(it);
+							oss << "            end" << endl;
+							goto outer;
+						}
+					}
 
 
 				string op = myNodes[j]->nodeOp;

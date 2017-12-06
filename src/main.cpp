@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 {
 	const char *arg1, *arg2, *arg3;
 	if (argc == 1) {
-		arg1 = "C:\\Users\\Dillon\\Desktop\\ECE-574A\\ECE-574A-Assignment-3\\assignment3_testfiles_full\\if tests\\test_if1.c";
+		arg1 = "C:\\Users\\Dillon\\Desktop\\ECE-574A\\ECE-574A-Assignment-3\\assignment3_testfiles_full\\if tests\\test_if2.c";
 		argc = 2;
 	}
 	else
