@@ -76,6 +76,8 @@ int main(int argc, char *argv[])
 	ostringstream oss;
 	
 	vector<Node*> myNodes;
+	int Ifcount = 0;
+	vector<tuple<bool, string>> conditions;	// true "if" false "else"
 
 	// Initialize Vector to size of latency
 	for (int i = 0; i <= 3; ++i)
@@ -105,6 +107,7 @@ int main(int argc, char *argv[])
 			if (!token.compare("+")) {	// ADD and INC
 				otherFound = true;
 				pNode = assign_op_result("+", line, var_map);
+				pNode->conditions = conditions;
 				if (pNode == NULL)
 					return 1;
 				myNodes.push_back(pNode);
@@ -116,6 +119,7 @@ int main(int argc, char *argv[])
 			else if (!token.compare("-")) {	// SUB and DEC
 				otherFound = true;
 				pNode = assign_op_result("-", line, var_map);
+				pNode->conditions = conditions;
 				if (pNode == NULL)
 					return 1;
 				myNodes.push_back(pNode);
@@ -124,6 +128,7 @@ int main(int argc, char *argv[])
 			else if (!token.compare("*")) {	// MUL
 				otherFound = true;
 				pNode = assign_op_result("*", line, var_map);
+				pNode->conditions = conditions;
 				if (pNode == NULL)
 					return 1;
 				myNodes.push_back(pNode);
@@ -132,6 +137,7 @@ int main(int argc, char *argv[])
 			else if (!token.compare(">")) {	// COMP (gt output)
 				otherFound = true;
 				pNode = assign_op_result(">", line, var_map);
+				pNode->conditions = conditions;
 				if (pNode == NULL)
 					return 1;
 				myNodes.push_back(pNode);
@@ -140,6 +146,7 @@ int main(int argc, char *argv[])
 			else if (!token.compare("<")) {	// COMP (lt output)
 				otherFound = true;
 				pNode = assign_op_result("<", line, var_map);
+				pNode->conditions = conditions;
 				if (pNode == NULL)
 					return 1;
 				myNodes.push_back(pNode);
@@ -148,6 +155,7 @@ int main(int argc, char *argv[])
 			else if (!token.compare("==")) {// COMP (eq output)
 				otherFound = true;
 				pNode = assign_op_result("==", line, var_map);
+				pNode->conditions = conditions;
 				if (pNode == NULL)
 					return 1;
 				myNodes.push_back(pNode);
@@ -156,6 +164,7 @@ int main(int argc, char *argv[])
 			else if (!token.compare("?") || !token.compare(":")) {	// MUX2x1
 				otherFound = true;
 				pNode = MUX2x1_(line, var_map);
+				pNode->conditions = conditions;
 				if(pNode == NULL)
 					return 1;
 				myNodes.push_back(pNode);
@@ -164,6 +173,7 @@ int main(int argc, char *argv[])
 			else if (!token.compare(">>")) { // SHR
 				otherFound = true;
 				pNode = assign_op_result(">>", line, var_map);
+				pNode->conditions = conditions;
 				if (pNode == NULL)
 					return 1;
 				myNodes.push_back(pNode);
@@ -172,6 +182,7 @@ int main(int argc, char *argv[])
 			else if (!token.compare("<<")) { // SHL
 				otherFound = true;
 				pNode = assign_op_result("<<", line, var_map);
+				pNode->conditions = conditions;
 				if (pNode == NULL)
 					return 1;
 				myNodes.push_back(pNode);
@@ -180,6 +191,7 @@ int main(int argc, char *argv[])
 			else if (!token.compare("/")) {	// DIV
 				otherFound = true;
 				pNode = assign_op_result("/", line, var_map);
+				pNode->conditions = conditions;
 				if (pNode == NULL)
 					return 1;
 				myNodes.push_back(pNode);
@@ -188,6 +200,7 @@ int main(int argc, char *argv[])
 			else if (!token.compare("%")) {	// MOD
 				otherFound = true;
 				pNode = assign_op_result("%", line, var_map);
+				pNode->conditions = conditions;
 				if (pNode == NULL)
 					return 1;
 				myNodes.push_back(pNode);
@@ -195,6 +208,26 @@ int main(int argc, char *argv[])
 			}
 			else if (!token.compare("//")) { // COMMENT!!!
 				otherFound = true;
+				break;
+			}
+			else if (!token.compare("if")) { // IF statment
+				++Ifcount;
+				iss >> token;
+				iss >> token;
+				tuple<bool, string> cond(true, token);
+				conditions.push_back(cond);
+				break;
+			}
+			else if (!token.compare("else")) { // ELSE statment
+				++Ifcount;
+				token = get<1>(conditions.back());
+				tuple<bool, string> cond(false, token);
+				conditions.push_back(cond);
+				break;
+			}
+			else if (!token.compare("}")) { // End of condition
+				--Ifcount;
+				conditions.pop_back();
 				break;
 			}
 			else if (!token.compare("input")) {	// input variables
@@ -231,6 +264,7 @@ int main(int argc, char *argv[])
 		}
 		if (eqFound && !otherFound) {
 			pNode = REG_(line, var_map);
+			pNode->conditions = conditions;
 			if (pNode == NULL)
 				return 1;
 			myNodes.push_back(pNode);
