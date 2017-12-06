@@ -30,7 +30,6 @@ public:
 	vector<Node*> parents;	// Nodes that happen before
 	vector<Node*> children;	// Nodes that are dependent on this node
 
-	bool withinIf;
 	vector<tuple<bool, string>> conditions;	// Vector is for nested if.  tuple< true "if" flase "else", string "case"> 
 	/* ex.	 stuffa <true, a>  or stuffb <false, a>
 				if (a)
