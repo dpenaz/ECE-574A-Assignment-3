@@ -29,7 +29,7 @@ string stateCode(vector<Node*> myNodes)
 				if (!op.compare("=")) {
 					oss << ins.front() << ";" << endl;
 				}
-				else if (op.compare("%")) {
+				else if (op.compare("?")) {
 					oss << ins.front() << " " << op << " " << ins.back() << ";" << endl;
 				}
 				else {

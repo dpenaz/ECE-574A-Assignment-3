@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 	else
 		arg2 = argv[2];
 	if (argc == 3) {
-		arg3 = "C:\\Users\\Dillon\\Desktop\\ECE-574A\\git-assignment3\\out.v";
+		arg3 = "C:\\Users\\Dillon\\Desktop\\ECE-574A\\git-assignment3 - Copy\\out.v";
 		argc = 4;
 	}
 	else
@@ -416,25 +416,22 @@ int grabVariables(string line, map<string, vector<string> > &my_map)
 
 	while (iss >> token)	// grab all tokens after input
 	{
-		if (reg) {
+		/*if (reg) {
 			string rtok = token;
 			if (token.back() == ',') {
 				token.pop_back();
 				rtok = token;
-				token.append("_out,");
 			}
-			else
-				token.append("_out");
 			vector<string> newVector2;
 			newVector2.push_back("register");
 			newVector2.push_back(type);
 			my_map[rtok] = newVector2;
-		}
+		}*/
 		outstr = outstr + token;
 		if (token.back() == ',')
 			token.pop_back();
 		vector<string> newVector;
-		newVector.push_back(reg ? "wire" : func);
+		newVector.push_back(reg ? "register" : func);
 		newVector.push_back(type);
 		my_map[token] = newVector;
 	}
