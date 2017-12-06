@@ -25,13 +25,13 @@ int main(int argc, char *argv[])
 {
 	const char *arg1, *arg2, *arg3;
 	if (argc == 1) {
-		arg1 = "C:\\Users\\Dillon\\Desktop\\ECE-574A\\ECE-574A-Assignment-3\\assignment3_testfiles_full\\error tests\\error4.c";
+		arg1 = "C:\\Users\\Dillon\\Desktop\\ECE-574A\\ECE-574A-Assignment-3\\assignment3_testfiles_full\\if tests\\test_if1.c";
 		argc = 2;
 	}
 	else
 		arg1 = argv[1];
 	if (argc == 2) {
-		arg2 = "40";
+		arg2 = "11";
 		argc = 3;
 	}
 	else
@@ -75,8 +75,6 @@ int main(int argc, char *argv[])
 	}
 
 	string token;
-	ostringstream oss;
-
 	int Ifcount = 0;
 	vector<tuple<bool, string>> conditions;	// true "if" false "else"
 
@@ -258,7 +256,6 @@ int main(int argc, char *argv[])
 				{
 					cerr << "token " << "'" << token << "' does not represent an input, output or variable" << endl;
 					cerr << errorMsg[1] << endl;
-					oss << errorMsg[1] << endl;
 					return 1;
 				}
 				storedTokens.push_back(token);
@@ -276,8 +273,12 @@ int main(int argc, char *argv[])
 	// Begin calculating steps for Forced-Directed Scheduling (FDS)
 
 	connectNodes(myNodes);
+	int t = cal_ASAP(myNodes);
+	if (t > latency) {
+		cerr << "latency is too small for this program (min: " << t << ")" << endl;
+		return 1;
+	}
 	cal_ALAP(myNodes, latency);
-	cal_ASAP(myNodes);
 	cal_width(myNodes);
 	cal_TypeDistribution(myNodes);
 	cal_ForceDir(myNodes);
@@ -287,7 +288,6 @@ int main(int argc, char *argv[])
 	printDistribution();
 
 
-	oss << "endmodule";  //close of module
 
 	infile.close();
 
@@ -310,7 +310,7 @@ int main(int argc, char *argv[])
 
 	finalOutFile << "module HSLM(Clk, Rst, Start, Done, " + var + ");" << endl;
 	finalOutFile << "input Clk, Rst, Start;" << endl <<
-		"output Done;" << endl <<
+		"output reg Done;" << endl <<
 		"reg [" << nStateBits - 1 << ":0] State;" << endl << endl;
 
 	finalOutFile << userVars.str() << endl;
@@ -342,7 +342,7 @@ int main(int argc, char *argv[])
 
 	finalOutFile << "end" << endl;
 
-	finalOutFile << oss.str();
+	finalOutFile << "endmodule" << endl;
 	finalOutFile.close();
 
 	return 0;
@@ -373,7 +373,7 @@ int grabVariables(string line, map<string, vector<string> > &my_map)
 	if (!func.compare("input"))
 		outstr = "input";
 	else if (!func.compare("output")) {
-		outstr = "output";
+		outstr = "output reg ";
 		out = true;
 	}
 	else if (!func.compare("variable")) {

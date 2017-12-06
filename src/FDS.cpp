@@ -184,15 +184,17 @@ void cal_ALAP(vector<Node*> myNodes, int cycles)
 					if (temp < time)		// get Largest wait time from children
 						time = temp;
 				}
-				if (ready)
+				if (ready) {
 					myNodes[i]->ALAP_start = time;
+				}
 			}
 		}
 	}
 }
 
-void cal_ASAP(vector<Node*> myNodes)
+int cal_ASAP(vector<Node*> myNodes)
 {
+	int max = 0;
 	int time, temp;
 	bool done = false;
 	while (!done)
@@ -217,11 +219,15 @@ void cal_ASAP(vector<Node*> myNodes)
 					if (temp > time)		// get Largest wait time from parents
 						time = temp;
 				}
-				if (done)
+				if (done) {
 					myNodes[i]->ASAP_start = time;
+					if (time + myNodes[i]->latency > max)
+						max = time + myNodes[i]->latency;
+				}
 			}
 		}
 	}
+	return max;
 }
 
 void cal_width(vector<Node*> myNodes)
