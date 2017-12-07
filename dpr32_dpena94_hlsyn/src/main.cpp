@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 {
 	const char *arg1, *arg2, *arg3;
 	if (argc == 1) {
-		arg1 = "C:\\Users\\Dillon\\Desktop\\ECE-574A\\ECE-574A-Assignment-3\\assignment3_testfiles_full\\if tests\\test_if2.c";
+		arg1 = "C:\\Users\\Devan\\Documents\\578 - Computer-Aided Logic Design\\assignment3_testfiles\\if tests\\test_if1.c";
 		argc = 2;
 	}
 	else
@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 	else
 		arg2 = argv[2];
 	if (argc == 3) {
-		arg3 = "C:\\Users\\Dillon\\Desktop\\ECE-574A\\ECE-574A-Assignment-3\\out.v";
+		arg3 = "C:\\Users\\Devan\\Documents\\578 - Computer-Aided Logic Design\\assignment3_testfiles\\out.v";
 		argc = 4;
 	}
 	else
@@ -283,9 +283,9 @@ int main(int argc, char *argv[])
 	cal_TypeDistribution(myNodes);
 	cal_ForceDir(myNodes);
 
-	printNodes(myNodes);
+	//printNodes(myNodes);
 
-	printDistribution();
+	//printDistribution();
 
 
 
